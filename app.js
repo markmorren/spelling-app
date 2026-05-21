@@ -3,9 +3,9 @@
 // ── Design metadata (icons / colours live here, not in words.json) ──────────
 const ACT_META = {
   'alphabet':           { icon: '🔤', color: '#007AFF', desc: '26 letters to build words' },
-  'consonant-digraphs': { icon: '💬', color: '#5856D6', desc: 'sh · ch · th · wh · ng · ck' },
-  'vowel-digraphs':     { icon: '🎵', color: '#FF9F0A', desc: 'ai · ee · oa · oo' },
-  'trigraphs':          { icon: '✨', color: '#32ADE6', desc: 'igh · tch · ear · air' },
+  'consonant-digraphs': { icon: '💬', color: '#5856D6', desc: 'sh · ch · th · wh · ng · ck · ph · gh · wr · kn' },
+  'vowel-digraphs':     { icon: '🎵', color: '#FF9F0A', desc: 'ai · ee · oa · oo · ur · ow · aw · ie · oi' },
+  'trigraphs':          { icon: '✨', color: '#32ADE6', desc: 'igh · tch · ear · air · ere · dge · eer · oul · ore · are' },
   'common-words':       { icon: '⭐', color: '#FF2D55', desc: 'Fry high-frequency words' },
 };
 
@@ -24,6 +24,21 @@ const SET_META = {
   'tch':      { icon: '🔥', color: '#FF3B30' },
   'ear':      { icon: '👂', color: '#AF52DE' },
   'air':      { icon: '💨', color: '#32ADE6' },
+  'ph':       { icon: '🐘', color: '#007AFF' },
+  'gh':       { icon: '😂', color: '#34C759' },
+  'wr':       { icon: '✍️', color: '#5856D6' },
+  'kn':       { icon: '🔪', color: '#FF3B30' },
+  'ur':       { icon: '🔥', color: '#FF6B35' },
+  'ow':       { icon: '🐮', color: '#8E8E93' },
+  'aw':       { icon: '🦅', color: '#FF9500' },
+  'ie':       { icon: '🥧', color: '#FF2D55' },
+  'oi':       { icon: '🪙', color: '#FFD60A' },
+  'ere':      { icon: '📍', color: '#32ADE6' },
+  'dge':      { icon: '🌉', color: '#5856D6' },
+  'eer':      { icon: '🦌', color: '#34C759' },
+  'oul':      { icon: '🤔', color: '#8E8E93' },
+  'ore':      { icon: '🏪', color: '#007AFF' },
+  'are':      { icon: '🌸', color: '#FF2D55' },
   'seedling': { icon: '🌱', color: '#34C759', desc: 'First 50 words' },
   'sprout':   { icon: '🌿', color: '#30B0C7', desc: 'Words 51–100' },
   'bloom':    { icon: '🌻', color: '#FF9F0A', desc: 'Words 101–150' },
@@ -128,34 +143,38 @@ function renderHome() {
 function renderPick(idx) {
   actIdx = idx;
   const act = activities[idx];
+  const en  = getEnabledSets(act.id);
+  const visibleSets = act.sets.filter(s => en.has(s.id));
+
   document.getElementById('pick-title').textContent = act.name;
   const grid = document.getElementById('set-grid');
   grid.innerHTML = '';
 
-  // "Play All" card
-  const totalWords = act.sets.reduce((n, s) => n + s.words.length, 0);
-  const allCard = document.createElement('div');
-  allCard.className = 'set-card play-all';
-  allCard.dataset.setId = '__all__';
-  const actMeta = ACT_META[act.id] || {};
-  allCard.innerHTML = `
-    <div class="set-card-hero" style="background:${(actMeta.color || '#888')}20">
-      <span>🎯</span>
-    </div>
-    <div class="set-card-body">
-      <h3>Play All</h3>
-      <p>${totalWords} words</p>
-    </div>`;
-  grid.appendChild(allCard);
+  if (visibleSets.length > 1) {
+    const totalWords = visibleSets.reduce((n, s) => n + s.words.length, 0);
+    const allCard = document.createElement('div');
+    allCard.className = 'set-card play-all';
+    allCard.dataset.setId = '__all__';
+    const actMeta = ACT_META[act.id] || {};
+    allCard.innerHTML = `
+      <div class="set-card-hero" style="background:${(actMeta.color || '#888')}20">
+        <span>🎯</span>
+      </div>
+      <div class="set-card-body">
+        <h3>Play All</h3>
+        <p>${totalWords} words</p>
+      </div>`;
+    grid.appendChild(allCard);
+  }
 
-  act.sets.forEach(s => {
+  visibleSets.forEach(s => {
     const meta = SET_META[s.id] || { icon: '📝', color: '#8E8E93' };
     const card = document.createElement('div');
     card.className = 'set-card';
     card.dataset.setId = s.id;
     const label = s.id.length <= 3
-      ? `"${s.id}" words`   // digraph/trigraph label
-      : s.name;              // named set (Seedling, etc.)
+      ? `"${s.id}" words`
+      : s.name;
     card.innerHTML = `
       <div class="set-card-hero" style="background:${meta.color}20">
         <span>${meta.icon}</span>
@@ -185,7 +204,10 @@ function startSpelling(aIdx, sId) {
 function getWords() {
   const act = activities[actIdx];
   if (!act.sets) return act.words || [];
-  if (setId === null) return act.sets.flatMap(s => s.words);
+  if (setId === null) {
+    const en = getEnabledSets(act.id);
+    return act.sets.filter(s => en.has(s.id)).flatMap(s => s.words);
+  }
   return act.sets.find(s => s.id === setId)?.words || [];
 }
 function currentWord() { return getWords()[order[wordIdx]]; }
@@ -394,6 +416,10 @@ function renderTeacher() {
       <div class="t-card" id="act-toggles"></div>
     </div>
     <div>
+      <div class="t-section-title">Filter word sets</div>
+      <div id="set-filters"></div>
+    </div>
+    <div>
       <div class="t-section-title">Voice</div>
       <div class="t-card">
         <div class="t-row">
@@ -478,6 +504,9 @@ function renderTeacher() {
       localStorage.removeItem('teacher_pin');
       localStorage.removeItem('spelling_voice');
       localStorage.removeItem('spelling_rate');
+      activities.filter(a => a.sets).forEach(a => {
+        localStorage.removeItem(`enabled_sets_${a.id}`);
+      });
       speechRate = 0.75;
       selectedVoice = null;
       initVoices();
@@ -493,6 +522,46 @@ function renderTeacher() {
       localStorage.setItem('enabled_activities', JSON.stringify(ids));
       renderHome();
     });
+  });
+
+  // Set filter chips
+  const sfWrap = document.getElementById('set-filters');
+  activities.filter(a => a.sets && enabled.has(a.id)).forEach(act => {
+    const card = document.createElement('div');
+    card.className = 't-card t-set-card';
+    const enabledSets = getEnabledSets(act.id);
+    const actMeta = ACT_META[act.id] || {};
+
+    const heading = document.createElement('div');
+    heading.className = 't-sub-heading';
+    heading.textContent = `${actMeta.icon || ''} ${act.name}`;
+    card.appendChild(heading);
+
+    const chipGrid = document.createElement('div');
+    chipGrid.className = 'set-chip-grid';
+
+    act.sets.forEach(s => {
+      const sMeta = SET_META[s.id] || {};
+      const btn = document.createElement('button');
+      btn.className = 'set-chip' + (enabledSets.has(s.id) ? ' on' : '');
+      btn.dataset.setId = s.id;
+      btn.style.setProperty('--chip-color', sMeta.color || '#8E8E93');
+      btn.innerHTML = `${sMeta.icon || ''} <strong>${s.id}</strong>`;
+      btn.addEventListener('click', () => {
+        const cur = getEnabledSets(act.id);
+        if (cur.has(s.id)) {
+          if (cur.size > 1) cur.delete(s.id);
+        } else {
+          cur.add(s.id);
+        }
+        localStorage.setItem(`enabled_sets_${act.id}`, JSON.stringify([...cur]));
+        btn.className = 'set-chip' + (cur.has(s.id) ? ' on' : '');
+      });
+      chipGrid.appendChild(btn);
+    });
+
+    card.appendChild(chipGrid);
+    sfWrap.appendChild(card);
   });
 }
 
@@ -539,6 +608,15 @@ function getEnabledIds() {
   }
   return new Set(activities.map(a => a.id));
 }
+function getEnabledSets(actId) {
+  const stored = localStorage.getItem(`enabled_sets_${actId}`);
+  if (stored) {
+    try { return new Set(JSON.parse(stored)); } catch {}
+  }
+  const act = activities.find(a => a.id === actId);
+  return new Set((act?.sets || []).map(s => s.id));
+}
+
 function applyEnabledActivities() {
   // Ensure saved IDs still exist in the data
   const all = new Set(activities.map(a => a.id));
@@ -560,8 +638,14 @@ function bindEvents() {
     const idx = +card.dataset.actIdx;
     const act = activities[idx];
     if (act.sets) {
-      renderPick(idx);
-      showScreen('pick');
+      const en = getEnabledSets(act.id);
+      const vis = act.sets.filter(s => en.has(s.id));
+      if (vis.length === 1) {
+        startSpelling(idx, vis[0].id);
+      } else {
+        renderPick(idx);
+        showScreen('pick');
+      }
     } else {
       startSpelling(idx, null);
     }
@@ -584,8 +668,13 @@ function bindEvents() {
   document.getElementById('spell-back').addEventListener('click', () => {
     const act = activities[actIdx];
     if (act.sets) {
-      renderPick(actIdx);
-      showScreen('pick');
+      const en = getEnabledSets(act.id);
+      if (act.sets.filter(s => en.has(s.id)).length <= 1) {
+        showScreen('home');
+      } else {
+        renderPick(actIdx);
+        showScreen('pick');
+      }
     } else {
       showScreen('home');
     }

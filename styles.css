@@ -494,6 +494,37 @@ svg    { display: block; }
 .t-rate-wrap input[type=range] { flex: 1; accent-color: var(--blue); }
 .t-rate-value { font-size: 14px; color: var(--label3); min-width: 36px; text-align: right; }
 
+/* Set filter chips (teacher mode) */
+.t-sub-heading {
+  font-size: 12px; font-weight: 700;
+  color: var(--label3); letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 12px 16px 4px;
+}
+.set-chip-grid {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 8px 16px 14px;
+}
+.set-chip {
+  padding: 6px 12px;
+  border-radius: 16px;
+  border: 2px solid var(--separator);
+  background: var(--bg);
+  color: var(--label2);
+  font-size: 14px; font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+  -webkit-user-select: none; user-select: none;
+  touch-action: manipulation;
+}
+.set-chip strong { font-weight: 800; }
+.set-chip.on {
+  background: var(--chip-color, var(--blue));
+  border-color: var(--chip-color, var(--blue));
+  color: #fff;
+}
+.set-chip:active { filter: brightness(.88); }
+
 /* ════════════════════════════════════════════════════════
    OVERLAYS (PIN + Voice settings)
    ════════════════════════════════════════════════════════ */
