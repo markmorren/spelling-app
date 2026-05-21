@@ -76,11 +76,110 @@ header {
   min-width: 80px;
 }
 
+#header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 #progress {
   font-size: 14px;
   color: #888;
   font-weight: 500;
 }
+
+#settings-btn {
+  background: none;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 6px;
+  color: #888;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s, background 0.15s;
+}
+#settings-btn:hover { color: #333; background: #f0f0f0; }
+#settings-btn svg   { width: 22px; height: 22px; fill: currentColor; }
+
+/* ── Settings overlay ── */
+#settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+#settings-overlay[hidden] { display: none; }
+
+#settings-panel {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 28px 20px;
+  width: min(420px, 90vw);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+#settings-panel h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #222;
+  margin: 0;
+}
+
+.setting-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.setting-row label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+#voice-select {
+  padding: 10px 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  background: #fff;
+  color: #222;
+  cursor: pointer;
+}
+#rate-range {
+  width: 100%;
+  accent-color: var(--blue);
+  cursor: pointer;
+}
+#rate-label {
+  font-weight: 400;
+  color: #888;
+}
+
+.setting-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.setting-actions button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+#test-voice-btn    { background: #f0f0f0; color: #333; }
+#settings-close-btn { background: var(--blue); color: #fff; }
 
 /* ── Tile bank ── */
 #bank {

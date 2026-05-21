@@ -30,6 +30,7 @@ async function init() {
     return;
   }
 
+  initVoices();
   bindEvents();
   loadActivity(0);
   registerSW();
@@ -220,16 +221,102 @@ function nextWord() {
 
 // ── Speech ────────────────────────────────────────────────
 
+let selectedVoice = null;
+let speechRate    = 0.75;
+
+// Preferred voices in quality order — Apple enhanced voices are best for children
+const PREFERRED_VOICES = [
+  'Daniel (Enhanced)', 'Serena (Enhanced)', 'Kate (Enhanced)',
+  'Daniel', 'Serena', 'Kate', 'Oliver', 'Arthur',
+  'Microsoft Hazel', 'Microsoft George', 'Microsoft Susan',
+  'Google UK English Female', 'Google UK English Male',
+];
+
+function initVoices() {
+  const apply = () => {
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices.length) return;
+
+    // Restore saved preference
+    const saved = localStorage.getItem('spelling_voice');
+    if (saved) {
+      const v = voices.find(v => v.name === saved);
+      if (v) { selectedVoice = v; syncSettingsUI(); return; }
+    }
+
+    // Auto-pick best available
+    for (const name of PREFERRED_VOICES) {
+      const v = voices.find(v => v.name === name);
+      if (v) { selectedVoice = v; syncSettingsUI(); return; }
+    }
+    // Fall back to any en-GB, then any English
+    selectedVoice =
+      voices.find(v => v.lang === 'en-GB') ||
+      voices.find(v => v.lang.startsWith('en')) ||
+      voices[0];
+    syncSettingsUI();
+  };
+
+  apply();
+  window.speechSynthesis.addEventListener('voiceschanged', apply);
+
+  // Restore saved speed
+  const savedRate = parseFloat(localStorage.getItem('spelling_rate') || '');
+  if (!isNaN(savedRate)) speechRate = savedRate;
+}
+
+function populateVoiceSelect() {
+  const sel    = document.getElementById('voice-select');
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return;
+
+  // Show en-GB first, then other English, grouped
+  const gb      = voices.filter(v => v.lang === 'en-GB');
+  const enOther = voices.filter(v => v.lang.startsWith('en') && v.lang !== 'en-GB');
+
+  const makeOpt = v => {
+    const o = document.createElement('option');
+    o.value = v.name;
+    o.textContent = v.name.replace(' (Enhanced)', ' ✦');
+    if (selectedVoice && v.name === selectedVoice.name) o.selected = true;
+    return o;
+  };
+
+  sel.innerHTML = '';
+  if (gb.length) {
+    const g = document.createElement('optgroup');
+    g.label = 'English (UK)';
+    gb.forEach(v => g.appendChild(makeOpt(v)));
+    sel.appendChild(g);
+  }
+  if (enOther.length) {
+    const g = document.createElement('optgroup');
+    g.label = 'English (other)';
+    enOther.forEach(v => g.appendChild(makeOpt(v)));
+    sel.appendChild(g);
+  }
+}
+
+function syncSettingsUI() {
+  const rateInput = document.getElementById('rate-range');
+  const rateLabel = document.getElementById('rate-label');
+  if (rateInput) {
+    rateInput.value    = speechRate;
+    rateLabel.textContent = `${speechRate.toFixed(2)}×`;
+  }
+}
+
 function speakCurrent() {
   speak(currentWord().word);
 }
 
 function speak(text) {
   if (!('speechSynthesis' in window)) return;
-  const u  = new SpeechSynthesisUtterance(text);
-  u.lang   = 'en-GB';
-  u.rate   = 0.82;
-  u.pitch  = 1.05;
+  const u   = new SpeechSynthesisUtterance(text);
+  u.lang    = 'en-GB';
+  u.rate    = speechRate;
+  u.pitch   = 1.0;
+  if (selectedVoice) u.voice = selectedVoice;
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(u);
 }
@@ -259,6 +346,42 @@ function bindEvents() {
   document.getElementById('clear-btn').addEventListener('click', clearAnswer);
   document.getElementById('check-btn').addEventListener('click', checkAnswer);
   document.getElementById('next-btn').addEventListener('click',  nextWord);
+
+  // Settings panel
+  document.getElementById('settings-btn').addEventListener('click', openSettings);
+  document.getElementById('settings-close-btn').addEventListener('click', closeSettings);
+  document.getElementById('settings-overlay').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeSettings();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeSettings();
+  });
+
+  document.getElementById('voice-select').addEventListener('change', e => {
+    const voices = window.speechSynthesis.getVoices();
+    selectedVoice = voices.find(v => v.name === e.target.value) || selectedVoice;
+    localStorage.setItem('spelling_voice', selectedVoice.name);
+  });
+
+  document.getElementById('rate-range').addEventListener('input', e => {
+    speechRate = parseFloat(e.target.value);
+    document.getElementById('rate-label').textContent = `${speechRate.toFixed(2)}×`;
+    localStorage.setItem('spelling_rate', speechRate);
+  });
+
+  document.getElementById('test-voice-btn').addEventListener('click', () => {
+    speak('Can you spell the word?');
+  });
+}
+
+function openSettings() {
+  populateVoiceSelect();
+  syncSettingsUI();
+  document.getElementById('settings-overlay').hidden = false;
+}
+
+function closeSettings() {
+  document.getElementById('settings-overlay').hidden = true;
 }
 
 // ── Utils ─────────────────────────────────────────────────
