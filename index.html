@@ -4,26 +4,116 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="theme-color" content="#5cb85c">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#f2f2f7">
   <title>Spelling Tiles</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header>
-    <nav id="tabs" role="tablist" aria-label="Spelling activities"></nav>
-    <div id="header-row">
-      <div id="sound-badge" aria-label="Target sound"></div>
-      <div id="header-right">
-        <div id="progress" aria-label="Word progress"></div>
-        <button id="settings-btn" aria-label="Voice settings" title="Voice settings">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.1 7.1 0 0 0-1.62-.94l-.36-2.54A.484.484 0 0 0 14 2h-4a.484.484 0 0 0-.48.41l-.36 2.54a7.1 7.1 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.04.7 1.62.94l.36 2.54c.05.24.27.41.48.41h4c.24 0 .44-.17.47-.41l.36-2.54a7.1 7.1 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.03-1.58zm-7.14 2.56a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>
+
+  <!-- ── Screen: Home ── -->
+  <div id="screen-home" class="screen active">
+    <div class="home-header">
+      <div>
+        <h1 class="home-title">Spelling Tiles</h1>
+        <p class="home-sub">Choose an activity</p>
+      </div>
+    </div>
+    <div id="activity-grid"></div>
+    <button id="teacher-link">For Teachers</button>
+  </div>
+
+  <!-- ── Screen: Set picker ── -->
+  <div id="screen-pick" class="screen">
+    <div class="nav-bar">
+      <button class="back-btn" id="pick-back">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        Back
+      </button>
+      <h2 id="pick-title"></h2>
+      <div></div>
+    </div>
+    <div id="set-grid"></div>
+  </div>
+
+  <!-- ── Screen: Spelling activity ── -->
+  <div id="screen-spell" class="screen">
+    <div class="spell-header">
+      <button class="back-btn" id="spell-back">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      </button>
+      <div id="sound-badge"></div>
+      <div class="spell-header-right">
+        <span id="progress-text"></span>
+        <button id="settings-btn" aria-label="Settings">
+          <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96a7.1 7.1 0 0 0-1.62-.94l-.36-2.54A.484.484 0 0 0 14 2h-4c-.24 0-.44.17-.47.41l-.36 2.54a7.1 7.1 0 0 0-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.04.7 1.62.94l.36 2.54c.05.24.27.41.48.41h4c.24 0 .44-.17.47-.41l.36-2.54a7.1 7.1 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.03-1.58zm-7.14 2.56a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>
         </button>
       </div>
     </div>
-  </header>
 
+    <div id="progress-bar-track"><div id="progress-bar"></div></div>
+
+    <section id="bank" aria-label="Letter tiles"></section>
+
+    <div id="work-area">
+      <div id="symbol-card" role="button" tabindex="0" aria-label="Hear the word">
+        <div id="symbol-wrap">
+          <img id="word-image" alt="" aria-hidden="true">
+          <span id="symbol-fallback" aria-hidden="true"></span>
+        </div>
+        <div id="speak-label">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06C18.01 19.86 21 16.28 21 12c0-4.28-2.99-7.86-7-8.77z"/>
+          </svg>
+          <span>Spell the word</span>
+        </div>
+      </div>
+      <div id="answer-box">
+        <div id="answer-tiles"></div>
+        <div id="answer-line"></div>
+      </div>
+    </div>
+
+    <div class="spell-footer">
+      <div id="controls">
+        <button id="clear-btn">Clear</button>
+        <button id="check-btn">Check</button>
+        <button id="next-btn" hidden>Next →</button>
+      </div>
+      <div id="feedback" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <!-- ── Screen: Teacher settings ── -->
+  <div id="screen-teacher" class="screen">
+    <div class="nav-bar">
+      <button class="back-btn" id="teacher-back">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        Done
+      </button>
+      <h2>Teacher Settings</h2>
+      <div></div>
+    </div>
+    <div id="teacher-content"></div>
+  </div>
+
+  <!-- ── Overlay: PIN entry ── -->
+  <div id="pin-overlay" hidden role="dialog" aria-modal="true" aria-label="Teacher PIN">
+    <div id="pin-panel">
+      <div id="pin-icon">🔒</div>
+      <h2>Teacher Access</h2>
+      <p>Enter your 4-digit PIN</p>
+      <input id="pin-input" type="password" inputmode="numeric" maxlength="4" pattern="\d{4}" autocomplete="off" placeholder="••••">
+      <div id="pin-error" hidden>Incorrect PIN — try again</div>
+      <div class="pin-actions">
+        <button id="pin-cancel">Cancel</button>
+        <button id="pin-submit">Enter →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Overlay: Voice settings ── -->
   <div id="settings-overlay" hidden role="dialog" aria-modal="true" aria-label="Voice settings">
     <div id="settings-panel">
       <h2>Voice Settings</h2>
@@ -32,7 +122,7 @@
         <select id="voice-select" aria-label="Choose voice"></select>
       </div>
       <div class="setting-row">
-        <label for="rate-range">Speed <span id="rate-label"></span></label>
+        <label for="rate-range">Speed &nbsp;<span id="rate-label"></span></label>
         <input type="range" id="rate-range" min="0.5" max="1.1" step="0.05" value="0.75">
       </div>
       <div class="setting-actions">
@@ -41,36 +131,6 @@
       </div>
     </div>
   </div>
-
-  <section id="bank" role="group" aria-label="Letter tiles — tap a letter to add it to your spelling"></section>
-
-  <div id="work-area">
-    <div id="symbol-card" role="button" tabindex="0" aria-label="Hear the word — tap to replay">
-      <div id="symbol-wrap">
-        <img id="word-image" alt="" aria-hidden="true">
-        <span id="symbol-fallback" aria-hidden="true"></span>
-      </div>
-      <div id="speak-label">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06C18.01 19.86 21 16.28 21 12c0-4.28-2.99-7.86-7-8.77z"/>
-        </svg>
-        <span>Spell the word</span>
-      </div>
-    </div>
-    <div id="answer-box" role="region" aria-label="Your spelling">
-      <div id="answer-tiles"></div>
-      <div id="answer-underline"></div>
-    </div>
-  </div>
-
-  <footer>
-    <div id="controls">
-      <button id="clear-btn">Clear</button>
-      <button id="check-btn">Check</button>
-      <button id="next-btn" hidden>Next →</button>
-    </div>
-    <div id="feedback" role="status" aria-live="polite"></div>
-  </footer>
 
   <script src="app.js"></script>
 </body>

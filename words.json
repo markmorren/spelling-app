@@ -4,77 +4,222 @@
       "id": "alphabet",
       "name": "Alphabet",
       "words": [
-        {"word": "cat"}, {"word": "dog"}, {"word": "sun"}, {"word": "hat"},
-        {"word": "bed"}, {"word": "pig"}, {"word": "cup"}, {"word": "fox"},
-        {"word": "van"}, {"word": "web"}, {"word": "zip"}, {"word": "jet"},
-        {"word": "run"}, {"word": "hop"}, {"word": "log"}, {"word": "bun"},
-        {"word": "fit"}, {"word": "top"}, {"word": "red"}, {"word": "big"},
-        {"word": "hot"}, {"word": "wet"}, {"word": "cut"}, {"word": "dig"},
-        {"word": "bag"}, {"word": "net"}, {"word": "pot"}, {"word": "lid"},
-        {"word": "map"}, {"word": "gun"}
+        {"word":"cat"},{"word":"dog"},{"word":"sun"},{"word":"hat"},{"word":"bed"},
+        {"word":"pig"},{"word":"cup"},{"word":"fox"},{"word":"van"},{"word":"web"},
+        {"word":"zip"},{"word":"jet"},{"word":"run"},{"word":"hop"},{"word":"log"},
+        {"word":"bun"},{"word":"fit"},{"word":"top"},{"word":"red"},{"word":"big"},
+        {"word":"hot"},{"word":"wet"},{"word":"cut"},{"word":"dig"},{"word":"bag"},
+        {"word":"net"},{"word":"pot"},{"word":"lid"},{"word":"map"},{"word":"fun"}
       ]
     },
     {
       "id": "consonant-digraphs",
       "name": "Consonant Digraphs",
-      "words": [
-        {"word": "chip",  "sound": "ch"}, {"word": "chat",  "sound": "ch"},
-        {"word": "chin",  "sound": "ch"}, {"word": "much",  "sound": "ch"},
-        {"word": "such",  "sound": "ch"}, {"word": "rich",  "sound": "ch"},
-        {"word": "bench", "sound": "ch"}, {"word": "lunch", "sound": "ch"},
-        {"word": "ship",  "sound": "sh"}, {"word": "shop",  "sound": "sh"},
-        {"word": "shed",  "sound": "sh"}, {"word": "fish",  "sound": "sh"},
-        {"word": "dish",  "sound": "sh"}, {"word": "rush",  "sound": "sh"},
-        {"word": "shell", "sound": "sh"},
-        {"word": "this",  "sound": "th"}, {"word": "that",  "sound": "th"},
-        {"word": "then",  "sound": "th"}, {"word": "with",  "sound": "th"},
-        {"word": "bath",  "sound": "th"}, {"word": "path",  "sound": "th"},
-        {"word": "moth",  "sound": "th"},
-        {"word": "when",  "sound": "wh"}, {"word": "what",  "sound": "wh"},
-        {"word": "whip",  "sound": "wh"},
-        {"word": "ring",  "sound": "ng"}, {"word": "sing",  "sound": "ng"},
-        {"word": "song",  "sound": "ng"}, {"word": "long",  "sound": "ng"},
-        {"word": "king",  "sound": "ng"}, {"word": "wing",  "sound": "ng"},
-        {"word": "back",  "sound": "ck"}, {"word": "duck",  "sound": "ck"},
-        {"word": "kick",  "sound": "ck"}, {"word": "lock",  "sound": "ck"},
-        {"word": "neck",  "sound": "ck"}, {"word": "sock",  "sound": "ck"}
+      "sets": [
+        {
+          "id": "sh", "name": "sh",
+          "words": [
+            {"word":"ship","sound":"sh"},{"word":"shop","sound":"sh"},{"word":"shed","sound":"sh"},
+            {"word":"fish","sound":"sh"},{"word":"dish","sound":"sh"},{"word":"rush","sound":"sh"},
+            {"word":"shell","sound":"sh"},{"word":"shut","sound":"sh"}
+          ]
+        },
+        {
+          "id": "ch", "name": "ch",
+          "words": [
+            {"word":"chip","sound":"ch"},{"word":"chat","sound":"ch"},{"word":"chin","sound":"ch"},
+            {"word":"much","sound":"ch"},{"word":"such","sound":"ch"},{"word":"rich","sound":"ch"},
+            {"word":"bench","sound":"ch"},{"word":"lunch","sound":"ch"}
+          ]
+        },
+        {
+          "id": "th", "name": "th",
+          "words": [
+            {"word":"this","sound":"th"},{"word":"that","sound":"th"},{"word":"then","sound":"th"},
+            {"word":"with","sound":"th"},{"word":"bath","sound":"th"},{"word":"path","sound":"th"},
+            {"word":"moth","sound":"th"},{"word":"thick","sound":"th"}
+          ]
+        },
+        {
+          "id": "wh", "name": "wh",
+          "words": [
+            {"word":"when","sound":"wh"},{"word":"what","sound":"wh"},{"word":"whip","sound":"wh"},
+            {"word":"whiz","sound":"wh"},{"word":"wheel","sound":"wh"}
+          ]
+        },
+        {
+          "id": "ng", "name": "ng",
+          "words": [
+            {"word":"ring","sound":"ng"},{"word":"sing","sound":"ng"},{"word":"song","sound":"ng"},
+            {"word":"long","sound":"ng"},{"word":"king","sound":"ng"},{"word":"wing","sound":"ng"},
+            {"word":"bang","sound":"ng"},{"word":"strong","sound":"ng"}
+          ]
+        },
+        {
+          "id": "ck", "name": "ck",
+          "words": [
+            {"word":"back","sound":"ck"},{"word":"duck","sound":"ck"},{"word":"kick","sound":"ck"},
+            {"word":"lock","sound":"ck"},{"word":"neck","sound":"ck"},{"word":"sock","sound":"ck"},
+            {"word":"black","sound":"ck"},{"word":"stick","sound":"ck"}
+          ]
+        }
       ]
     },
     {
       "id": "vowel-digraphs",
       "name": "Vowel Digraphs",
-      "words": [
-        {"word": "rain",  "sound": "ai"}, {"word": "tail",  "sound": "ai"},
-        {"word": "sail",  "sound": "ai"}, {"word": "snail", "sound": "ai"},
-        {"word": "train", "sound": "ai"}, {"word": "wait",  "sound": "ai"},
-        {"word": "bee",   "sound": "ee"}, {"word": "tree",  "sound": "ee"},
-        {"word": "feet",  "sound": "ee"}, {"word": "green", "sound": "ee"},
-        {"word": "sleep", "sound": "ee"}, {"word": "feel",  "sound": "ee"},
-        {"word": "boat",  "sound": "oa"}, {"word": "coat",  "sound": "oa"},
-        {"word": "road",  "sound": "oa"}, {"word": "toad",  "sound": "oa"},
-        {"word": "foam",  "sound": "oa"}, {"word": "loaf",  "sound": "oa"},
-        {"word": "book",  "sound": "oo"}, {"word": "cook",  "sound": "oo"},
-        {"word": "food",  "sound": "oo"}, {"word": "moon",  "sound": "oo"},
-        {"word": "pool",  "sound": "oo"}, {"word": "spoon", "sound": "oo"}
+      "sets": [
+        {
+          "id": "ai", "name": "ai",
+          "words": [
+            {"word":"rain","sound":"ai"},{"word":"tail","sound":"ai"},{"word":"sail","sound":"ai"},
+            {"word":"snail","sound":"ai"},{"word":"train","sound":"ai"},{"word":"wait","sound":"ai"},
+            {"word":"paid","sound":"ai"},{"word":"pain","sound":"ai"}
+          ]
+        },
+        {
+          "id": "ee", "name": "ee",
+          "words": [
+            {"word":"bee","sound":"ee"},{"word":"tree","sound":"ee"},{"word":"feet","sound":"ee"},
+            {"word":"green","sound":"ee"},{"word":"sleep","sound":"ee"},{"word":"feel","sound":"ee"},
+            {"word":"week","sound":"ee"},{"word":"keep","sound":"ee"}
+          ]
+        },
+        {
+          "id": "oa", "name": "oa",
+          "words": [
+            {"word":"boat","sound":"oa"},{"word":"coat","sound":"oa"},{"word":"road","sound":"oa"},
+            {"word":"toad","sound":"oa"},{"word":"foam","sound":"oa"},{"word":"loaf","sound":"oa"},
+            {"word":"groan","sound":"oa"},{"word":"toast","sound":"oa"}
+          ]
+        },
+        {
+          "id": "oo", "name": "oo",
+          "words": [
+            {"word":"book","sound":"oo"},{"word":"cook","sound":"oo"},{"word":"food","sound":"oo"},
+            {"word":"moon","sound":"oo"},{"word":"pool","sound":"oo"},{"word":"spoon","sound":"oo"},
+            {"word":"roof","sound":"oo"},{"word":"boot","sound":"oo"}
+          ]
+        }
       ]
     },
     {
       "id": "trigraphs",
       "name": "Trigraphs",
-      "words": [
-        {"word": "light",  "sound": "igh"}, {"word": "night",  "sound": "igh"},
-        {"word": "right",  "sound": "igh"}, {"word": "fight",  "sound": "igh"},
-        {"word": "bright", "sound": "igh"}, {"word": "tight",  "sound": "igh"},
-        {"word": "sight",  "sound": "igh"},
-        {"word": "catch",  "sound": "tch"}, {"word": "match",  "sound": "tch"},
-        {"word": "fetch",  "sound": "tch"}, {"word": "witch",  "sound": "tch"},
-        {"word": "patch",  "sound": "tch"}, {"word": "hatch",  "sound": "tch"},
-        {"word": "ear",    "sound": "ear"}, {"word": "hear",   "sound": "ear"},
-        {"word": "near",   "sound": "ear"}, {"word": "fear",   "sound": "ear"},
-        {"word": "year",   "sound": "ear"}, {"word": "clear",  "sound": "ear"},
-        {"word": "hair",   "sound": "air"}, {"word": "fair",   "sound": "air"},
-        {"word": "pair",   "sound": "air"}, {"word": "stair",  "sound": "air"},
-        {"word": "chair",  "sound": "air"}
+      "sets": [
+        {
+          "id": "igh", "name": "igh",
+          "words": [
+            {"word":"light","sound":"igh"},{"word":"night","sound":"igh"},{"word":"right","sound":"igh"},
+            {"word":"fight","sound":"igh"},{"word":"bright","sound":"igh"},{"word":"tight","sound":"igh"},
+            {"word":"sight","sound":"igh"},{"word":"might","sound":"igh"}
+          ]
+        },
+        {
+          "id": "tch", "name": "tch",
+          "words": [
+            {"word":"catch","sound":"tch"},{"word":"match","sound":"tch"},{"word":"fetch","sound":"tch"},
+            {"word":"witch","sound":"tch"},{"word":"patch","sound":"tch"},{"word":"hatch","sound":"tch"},
+            {"word":"pitch","sound":"tch"},{"word":"hutch","sound":"tch"}
+          ]
+        },
+        {
+          "id": "ear", "name": "ear",
+          "words": [
+            {"word":"ear","sound":"ear"},{"word":"hear","sound":"ear"},{"word":"near","sound":"ear"},
+            {"word":"fear","sound":"ear"},{"word":"year","sound":"ear"},{"word":"clear","sound":"ear"},
+            {"word":"dear","sound":"ear"},{"word":"gear","sound":"ear"}
+          ]
+        },
+        {
+          "id": "air", "name": "air",
+          "words": [
+            {"word":"hair","sound":"air"},{"word":"fair","sound":"air"},{"word":"pair","sound":"air"},
+            {"word":"stair","sound":"air"},{"word":"chair","sound":"air"},{"word":"lair","sound":"air"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "common-words",
+      "name": "Common Words",
+      "sets": [
+        {
+          "id": "seedling", "name": "Seedling",
+          "words": [
+            {"word":"the"},{"word":"of"},{"word":"and"},{"word":"to"},{"word":"in"},
+            {"word":"is"},{"word":"you"},{"word":"that"},{"word":"it"},{"word":"he"},
+            {"word":"was"},{"word":"for"},{"word":"on"},{"word":"are"},{"word":"as"},
+            {"word":"with"},{"word":"his"},{"word":"they"},{"word":"at"},{"word":"be"},
+            {"word":"this"},{"word":"have"},{"word":"from"},{"word":"or"},{"word":"one"},
+            {"word":"had"},{"word":"by"},{"word":"word"},{"word":"but"},{"word":"not"},
+            {"word":"what"},{"word":"all"},{"word":"were"},{"word":"we"},{"word":"when"},
+            {"word":"your"},{"word":"can"},{"word":"said"},{"word":"there"},{"word":"use"},
+            {"word":"an"},{"word":"each"},{"word":"which"},{"word":"she"},{"word":"do"},
+            {"word":"how"},{"word":"their"},{"word":"if"},{"word":"will"},{"word":"up"}
+          ]
+        },
+        {
+          "id": "sprout", "name": "Sprout",
+          "words": [
+            {"word":"other"},{"word":"about"},{"word":"out"},{"word":"many"},{"word":"then"},
+            {"word":"them"},{"word":"these"},{"word":"so"},{"word":"some"},{"word":"her"},
+            {"word":"would"},{"word":"make"},{"word":"like"},{"word":"him"},{"word":"into"},
+            {"word":"time"},{"word":"has"},{"word":"look"},{"word":"two"},{"word":"more"},
+            {"word":"go"},{"word":"see"},{"word":"no"},{"word":"way"},{"word":"could"},
+            {"word":"people"},{"word":"my"},{"word":"than"},{"word":"first"},{"word":"water"},
+            {"word":"been"},{"word":"call"},{"word":"who"},{"word":"now"},{"word":"find"},
+            {"word":"long"},{"word":"down"},{"word":"day"},{"word":"did"},{"word":"get"},
+            {"word":"come"},{"word":"made"},{"word":"may"},{"word":"part"},{"word":"over"},
+            {"word":"new"},{"word":"sound"},{"word":"take"},{"word":"only"},{"word":"little"}
+          ]
+        },
+        {
+          "id": "bloom", "name": "Bloom",
+          "words": [
+            {"word":"work"},{"word":"know"},{"word":"place"},{"word":"live"},{"word":"me"},
+            {"word":"back"},{"word":"give"},{"word":"most"},{"word":"very"},{"word":"after"},
+            {"word":"our"},{"word":"just"},{"word":"name"},{"word":"good"},{"word":"man"},
+            {"word":"think"},{"word":"say"},{"word":"great"},{"word":"where"},{"word":"help"},
+            {"word":"much"},{"word":"before"},{"word":"line"},{"word":"right"},{"word":"too"},
+            {"word":"mean"},{"word":"old"},{"word":"any"},{"word":"same"},{"word":"tell"},
+            {"word":"boy"},{"word":"follow"},{"word":"came"},{"word":"want"},{"word":"show"},
+            {"word":"also"},{"word":"around"},{"word":"three"},{"word":"small"},{"word":"set"},
+            {"word":"put"},{"word":"end"},{"word":"does"},{"word":"another"},{"word":"well"},
+            {"word":"large"},{"word":"must"},{"word":"big"},{"word":"even"},{"word":"such"},
+            {"word":"turn"}
+          ]
+        },
+        {
+          "id": "star", "name": "Star",
+          "words": [
+            {"word":"here"},{"word":"why"},{"word":"ask"},{"word":"went"},{"word":"men"},
+            {"word":"read"},{"word":"need"},{"word":"land"},{"word":"home"},{"word":"us"},
+            {"word":"move"},{"word":"try"},{"word":"kind"},{"word":"hand"},{"word":"again"},
+            {"word":"change"},{"word":"off"},{"word":"play"},{"word":"spell"},{"word":"away"},
+            {"word":"animal"},{"word":"house"},{"word":"point"},{"word":"page"},{"word":"letter"},
+            {"word":"mother"},{"word":"found"},{"word":"study"},{"word":"still"},{"word":"learn"},
+            {"word":"should"},{"word":"world"},{"word":"high"},{"word":"every"},{"word":"near"},
+            {"word":"food"},{"word":"own"},{"word":"below"},{"word":"country"},{"word":"plant"},
+            {"word":"last"},{"word":"school"},{"word":"father"},{"word":"keep"},{"word":"tree"},
+            {"word":"never"},{"word":"start"},{"word":"city"},{"word":"earth"},{"word":"light"}
+          ]
+        },
+        {
+          "id": "champion", "name": "Champion",
+          "words": [
+            {"word":"head"},{"word":"under"},{"word":"story"},{"word":"left"},{"word":"few"},
+            {"word":"while"},{"word":"along"},{"word":"close"},{"word":"seem"},{"word":"next"},
+            {"word":"hard"},{"word":"open"},{"word":"begin"},{"word":"life"},{"word":"always"},
+            {"word":"both"},{"word":"paper"},{"word":"together"},{"word":"group"},{"word":"often"},
+            {"word":"run"},{"word":"until"},{"word":"children"},{"word":"side"},{"word":"feet"},
+            {"word":"car"},{"word":"mile"},{"word":"night"},{"word":"walk"},{"word":"white"},
+            {"word":"sea"},{"word":"grow"},{"word":"took"},{"word":"river"},{"word":"four"},
+            {"word":"carry"},{"word":"once"},{"word":"book"},{"word":"hear"},{"word":"stop"},
+            {"word":"without"},{"word":"second"},{"word":"later"},{"word":"enough"},{"word":"eat"},
+            {"word":"face"},{"word":"watch"},{"word":"far"},{"word":"real"},{"word":"almost"}
+          ]
+        }
       ]
     }
   ]
