@@ -1,0 +1,81 @@
+{
+  "activities": [
+    {
+      "id": "alphabet",
+      "name": "Alphabet",
+      "words": [
+        {"word": "cat"}, {"word": "dog"}, {"word": "sun"}, {"word": "hat"},
+        {"word": "bed"}, {"word": "pig"}, {"word": "cup"}, {"word": "fox"},
+        {"word": "van"}, {"word": "web"}, {"word": "zip"}, {"word": "jet"},
+        {"word": "run"}, {"word": "hop"}, {"word": "log"}, {"word": "bun"},
+        {"word": "fit"}, {"word": "top"}, {"word": "red"}, {"word": "big"},
+        {"word": "hot"}, {"word": "wet"}, {"word": "cut"}, {"word": "dig"},
+        {"word": "bag"}, {"word": "net"}, {"word": "pot"}, {"word": "lid"},
+        {"word": "map"}, {"word": "gun"}
+      ]
+    },
+    {
+      "id": "consonant-digraphs",
+      "name": "Consonant Digraphs",
+      "words": [
+        {"word": "chip",  "sound": "ch"}, {"word": "chat",  "sound": "ch"},
+        {"word": "chin",  "sound": "ch"}, {"word": "much",  "sound": "ch"},
+        {"word": "such",  "sound": "ch"}, {"word": "rich",  "sound": "ch"},
+        {"word": "bench", "sound": "ch"}, {"word": "lunch", "sound": "ch"},
+        {"word": "ship",  "sound": "sh"}, {"word": "shop",  "sound": "sh"},
+        {"word": "shed",  "sound": "sh"}, {"word": "fish",  "sound": "sh"},
+        {"word": "dish",  "sound": "sh"}, {"word": "rush",  "sound": "sh"},
+        {"word": "shell", "sound": "sh"},
+        {"word": "this",  "sound": "th"}, {"word": "that",  "sound": "th"},
+        {"word": "then",  "sound": "th"}, {"word": "with",  "sound": "th"},
+        {"word": "bath",  "sound": "th"}, {"word": "path",  "sound": "th"},
+        {"word": "moth",  "sound": "th"},
+        {"word": "when",  "sound": "wh"}, {"word": "what",  "sound": "wh"},
+        {"word": "whip",  "sound": "wh"},
+        {"word": "ring",  "sound": "ng"}, {"word": "sing",  "sound": "ng"},
+        {"word": "song",  "sound": "ng"}, {"word": "long",  "sound": "ng"},
+        {"word": "king",  "sound": "ng"}, {"word": "wing",  "sound": "ng"},
+        {"word": "back",  "sound": "ck"}, {"word": "duck",  "sound": "ck"},
+        {"word": "kick",  "sound": "ck"}, {"word": "lock",  "sound": "ck"},
+        {"word": "neck",  "sound": "ck"}, {"word": "sock",  "sound": "ck"}
+      ]
+    },
+    {
+      "id": "vowel-digraphs",
+      "name": "Vowel Digraphs",
+      "words": [
+        {"word": "rain",  "sound": "ai"}, {"word": "tail",  "sound": "ai"},
+        {"word": "sail",  "sound": "ai"}, {"word": "snail", "sound": "ai"},
+        {"word": "train", "sound": "ai"}, {"word": "wait",  "sound": "ai"},
+        {"word": "bee",   "sound": "ee"}, {"word": "tree",  "sound": "ee"},
+        {"word": "feet",  "sound": "ee"}, {"word": "green", "sound": "ee"},
+        {"word": "sleep", "sound": "ee"}, {"word": "feel",  "sound": "ee"},
+        {"word": "boat",  "sound": "oa"}, {"word": "coat",  "sound": "oa"},
+        {"word": "road",  "sound": "oa"}, {"word": "toad",  "sound": "oa"},
+        {"word": "foam",  "sound": "oa"}, {"word": "loaf",  "sound": "oa"},
+        {"word": "book",  "sound": "oo"}, {"word": "cook",  "sound": "oo"},
+        {"word": "food",  "sound": "oo"}, {"word": "moon",  "sound": "oo"},
+        {"word": "pool",  "sound": "oo"}, {"word": "spoon", "sound": "oo"}
+      ]
+    },
+    {
+      "id": "trigraphs",
+      "name": "Trigraphs",
+      "words": [
+        {"word": "light",  "sound": "igh"}, {"word": "night",  "sound": "igh"},
+        {"word": "right",  "sound": "igh"}, {"word": "fight",  "sound": "igh"},
+        {"word": "bright", "sound": "igh"}, {"word": "tight",  "sound": "igh"},
+        {"word": "sight",  "sound": "igh"},
+        {"word": "catch",  "sound": "tch"}, {"word": "match",  "sound": "tch"},
+        {"word": "fetch",  "sound": "tch"}, {"word": "witch",  "sound": "tch"},
+        {"word": "patch",  "sound": "tch"}, {"word": "hatch",  "sound": "tch"},
+        {"word": "ear",    "sound": "ear"}, {"word": "hear",   "sound": "ear"},
+        {"word": "near",   "sound": "ear"}, {"word": "fear",   "sound": "ear"},
+        {"word": "year",   "sound": "ear"}, {"word": "clear",  "sound": "ear"},
+        {"word": "hair",   "sound": "air"}, {"word": "fair",   "sound": "air"},
+        {"word": "pair",   "sound": "air"}, {"word": "stair",  "sound": "air"},
+        {"word": "chair",  "sound": "air"}
+      ]
+    }
+  ]
+}
