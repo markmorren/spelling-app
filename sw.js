@@ -1,4 +1,4 @@
-const CACHE = 'spelling-v1';
+const CACHE = 'spelling-v3';
 const ASSETS = [
   '/',
   '/index.html',
