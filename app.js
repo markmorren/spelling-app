@@ -2,6 +2,13 @@
 
 const LETTERS = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
+// ARASAAC — free educational symbol library (CC BY-NC-SA 4.0, arasaac.org)
+// Image IDs are cached in localStorage so the search API is only called once per word.
+const ARASAAC_SEARCH = w =>
+  `https://api.arasaac.org/v1/pictograms/en/search/${encodeURIComponent(w)}`;
+const ARASAAC_IMG = id =>
+  `https://static.arasaac.org/pictograms/${id}/${id}_300.png`;
+
 let activities = [];
 let actIdx  = 0;
 let wordIdx = 0;
@@ -75,9 +82,76 @@ function renderWord() {
   document.getElementById('feedback').className = '';
 
   renderAnswer();
-  // Slight delay so the UI settles before speaking
+  loadWordImage(w.word);
   setTimeout(speakCurrent, 350);
 }
+
+// ── ARASAAC image loading ─────────────────────────────────
+
+async function loadWordImage(word) {
+  const img      = document.getElementById('word-image');
+  const fallback = document.getElementById('symbol-fallback');
+
+  img.src = '';
+  img.style.display = 'block';
+  fallback.className = '';
+  fallback.textContent = '';
+
+  // Use cached ID if available
+  const cacheKey = `arasaac_id_${word}`;
+  const cached   = localStorage.getItem(cacheKey);
+
+  if (cached === 'none') {
+    showFallback(word);
+    return;
+  }
+
+  if (cached) {
+    img.src = ARASAAC_IMG(cached);
+    return;
+  }
+
+  try {
+    const res  = await fetch(ARASAAC_SEARCH(word));
+    if (!res.ok) throw new Error('no results');
+    const data = await res.json();
+    if (!data || data.length === 0) throw new Error('empty');
+    const id = data[0]._id;
+    localStorage.setItem(cacheKey, id);
+    img.src = ARASAAC_IMG(id);
+  } catch {
+    localStorage.setItem(cacheKey, 'none');
+    showFallback(word);
+  }
+}
+
+function showFallback(word) {
+  const img      = document.getElementById('word-image');
+  const fallback = document.getElementById('symbol-fallback');
+  img.style.display = 'none';
+  fallback.className   = 'visible';
+  // Use emoji if available, otherwise first letter
+  fallback.textContent = EMOJI[word] || word[0].toUpperCase();
+}
+
+// Emoji fallbacks for words that may not return a clear ARASAAC symbol
+const EMOJI = {
+  cat:'🐱', dog:'🐶', sun:'☀️', hat:'🎩', bed:'🛏️', pig:'🐷', cup:'🍵',
+  fox:'🦊', van:'🚐', web:'🕸️', zip:'🤐', jet:'✈️', run:'🏃', hop:'🐸',
+  log:'🪵', bun:'🍞', top:'🎯', red:'🔴', hot:'🌡️', wet:'💧', cut:'✂️',
+  bag:'👜', pot:'🍲', map:'🗺️', gun:'🔫', fit:'💪', big:'⬆️', dig:'⛏️',
+  net:'🎣', lid:'🫙',
+  chip:'🍟', chat:'💬', ship:'🚢', shop:'🛒', fish:'🐟', dish:'🍽️',
+  shell:'🐚', ring:'💍', sing:'🎤', song:'🎵', king:'👑', wing:'🪶',
+  back:'⬅️', duck:'🦆', lock:'🔒', sock:'🧦',
+  rain:'🌧️', tail:'🐱', sail:'⛵', snail:'🐌', train:'🚂', tree:'🌳',
+  boat:'⛵', coat:'🧥', road:'🛣️', moon:'🌙', pool:'🏊', spoon:'🥄',
+  book:'📚', cook:'👨‍🍳', food:'🍱',
+  light:'💡', night:'🌙', right:'✅', fight:'🥊', bright:'✨', tight:'🪢',
+  catch:'🫙', match:'🔥', witch:'🧙', chair:'🪑', hair:'💇', fair:'🎡',
+  stair:'🪜', ear:'👂', hear:'👂', near:'📍', fear:'😨', year:'📅',
+  clear:'🔍', pair:'👯'
+};
 
 function renderAnswer() {
   const w = currentWord();
@@ -178,7 +252,10 @@ function bindEvents() {
     if (btn) removeLetter(+btn.dataset.idx);
   });
 
-  document.getElementById('speak-btn').addEventListener('click', speakCurrent);
+  const card = document.getElementById('symbol-card');
+  card.addEventListener('click', speakCurrent);
+  card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') speakCurrent(); });
+
   document.getElementById('clear-btn').addEventListener('click', clearAnswer);
   document.getElementById('check-btn').addEventListener('click', checkAnswer);
   document.getElementById('next-btn').addEventListener('click',  nextWord);
