@@ -82,8 +82,14 @@ let order      = [];
 let answer     = [];
 let checked    = false;
 
-let selectedVoice = null;
-let speechRate    = 0.75;
+let selectedVoice   = null;
+let speechRate      = 0.75;
+let lastCheckResult = false;
+let answerCtx       = null;
+let answerDrawing   = false;
+let answerWriteOn   = false;
+let answerPrevX     = 0;
+let answerPrevY     = 0;
 
 const PREFERRED_VOICES = [
   'Daniel (Enhanced)','Serena (Enhanced)','Kate (Enhanced)',
@@ -91,6 +97,26 @@ const PREFERRED_VOICES = [
   'Microsoft Hazel','Microsoft George','Microsoft Susan',
   'Google UK English Female','Google UK English Male',
 ];
+
+// ── Settings helpers ──────────────────────────────────────
+function getSetting(key, def) {
+  const v = localStorage.getItem(key);
+  return v === null ? def : v === 'true';
+}
+
+// ── Elkonin helpers ───────────────────────────────────────
+function getBoxCount(word, sound) {
+  if (!sound) return word.length;
+  return word.length - sound.length + 1;
+}
+
+function letterIdxToBox(i, word, sound) {
+  if (!sound) return i;
+  const pos = word.indexOf(sound);
+  if (i < pos) return i;
+  if (i < pos + sound.length) return pos;
+  return i - sound.length + 1;
+}
 
 // ── Bootstrap ─────────────────────────────────────────────
 async function init() {
@@ -106,6 +132,7 @@ async function init() {
   applyEnabledActivities();
   initVoices();
   bindEvents();
+  initAnswerCanvas();
   showScreen('home');
   renderHome();
   registerSW();
@@ -225,6 +252,7 @@ function renderWord() {
   document.getElementById('progress-bar').style.width =
     `${((wordIdx + 1) / words.length) * 100}%`;
   document.getElementById('next-btn').hidden = true;
+  requestAnimationFrame(resetAnswerCanvas);
   document.getElementById('feedback').textContent = '';
   document.getElementById('feedback').className = '';
   document.getElementById('answer-tiles').className = '';
@@ -240,6 +268,7 @@ function renderBank() {
 }
 
 function renderAnswer() {
+  if (getSetting('feature_elkonin', false)) { renderElkoninBoxes(); return; }
   const w     = currentWord();
   const sound = w.sound || '';
   const pos   = sound ? w.word.indexOf(sound) : -1;
@@ -248,6 +277,48 @@ function renderAnswer() {
     const hl = checked && pos >= 0 && i >= pos && i < pos + len ? ' highlight' : '';
     return `<button class="tile answer-tile${hl}" data-idx="${i}">${l}</button>`;
   }).join('');
+}
+
+function renderElkoninBoxes() {
+  const w        = currentWord();
+  const sound    = w.sound || '';
+  const word     = w.word;
+  const nBoxes   = getBoxCount(word, sound);
+  const soundBox = sound ? word.indexOf(sound) : -1;
+
+  const boxes = Array.from({ length: nBoxes }, () => []);
+  answer.forEach((letter, i) => {
+    boxes[letterIdxToBox(i, word, sound)].push(letter);
+  });
+
+  const activeBox = answer.length < word.length
+    ? letterIdxToBox(answer.length, word, sound)
+    : -1;
+
+  const container = document.getElementById('answer-tiles');
+  const row = document.createElement('div');
+  row.className = 'elkonin-row';
+
+  boxes.forEach((letters, bi) => {
+    const box = document.createElement('div');
+    let cls = 'elkonin-box';
+    if (bi === soundBox) cls += ' sound-box';
+    if (letters.length > 0) cls += ' filled';
+    if (bi === activeBox) cls += ' active';
+    if (checked && bi === soundBox && soundBox >= 0) {
+      cls += lastCheckResult ? ' correct' : ' incorrect';
+    }
+    box.className = cls;
+    box.dataset.boxIdx = bi;
+    const inner = document.createElement('span');
+    inner.className = 'elkonin-letters';
+    inner.textContent = letters.join('');
+    box.appendChild(inner);
+    row.appendChild(box);
+  });
+
+  container.innerHTML = '';
+  container.appendChild(row);
 }
 
 // ── ARASAAC images ────────────────────────────────────────
@@ -286,12 +357,22 @@ function showFallback(word) {
 // ── Interaction ───────────────────────────────────────────
 function addLetter(letter) {
   if (checked) return;
+  if (getSetting('feature_elkonin', false) && answer.length >= currentWord().word.length) return;
   answer.push(letter);
   renderAnswer();
 }
 function removeLetter(idx) {
   if (checked) return;
   answer.splice(idx, 1);
+  renderAnswer();
+}
+
+function removeFromBox(boxIdx) {
+  if (checked) return;
+  const w = currentWord();
+  const firstIdx = answer.findIndex((_, i) => letterIdxToBox(i, w.word, w.sound || '') >= boxIdx);
+  if (firstIdx === -1) return;
+  answer.splice(firstIdx);
   renderAnswer();
 }
 function clearAnswer() {
@@ -310,7 +391,9 @@ function checkAnswer() {
   const fb    = document.getElementById('feedback');
   const tiles = document.getElementById('answer-tiles');
 
-  if (typed === w.word) {
+  lastCheckResult = (typed === w.word);
+
+  if (lastCheckResult) {
     fb.className   = 'correct';
     fb.textContent = '✓  Correct!';
     tiles.classList.add('celebrate');
@@ -323,6 +406,7 @@ function checkAnswer() {
   }
   renderAnswer();
   document.getElementById('next-btn').hidden = false;
+  if (getSetting('feature_write', false)) enableAnswerCanvas();
 }
 
 function nextWord() {
@@ -368,6 +452,71 @@ function speak(text) {
   if (selectedVoice) u.voice = selectedVoice;
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(u);
+}
+
+// ── Answer-line canvas ────────────────────────────────────
+function initAnswerCanvas() {
+  const c = document.getElementById('answer-line');
+
+  c.addEventListener('touchstart', e => {
+    if (!answerWriteOn) return;
+    e.preventDefault();
+    const t = e.changedTouches[0], r = c.getBoundingClientRect();
+    answerDrawing = true;
+    answerPrevX = t.clientX - r.left; answerPrevY = t.clientY - r.top;
+  }, { passive: false });
+
+  c.addEventListener('touchmove', e => {
+    if (!answerWriteOn || !answerDrawing || !answerCtx) return;
+    e.preventDefault();
+    const t = e.changedTouches[0], r = c.getBoundingClientRect();
+    const x = t.clientX - r.left, y = t.clientY - r.top;
+    answerCtx.beginPath(); answerCtx.moveTo(answerPrevX, answerPrevY);
+    answerCtx.lineTo(x, y); answerCtx.stroke();
+    answerPrevX = x; answerPrevY = y;
+  }, { passive: false });
+
+  c.addEventListener('touchend',   e => { if (answerWriteOn) { e.preventDefault(); answerDrawing = false; } }, { passive: false });
+  c.addEventListener('mousedown',  e => {
+    if (!answerWriteOn) return;
+    const r = c.getBoundingClientRect();
+    answerDrawing = true; answerPrevX = e.clientX - r.left; answerPrevY = e.clientY - r.top;
+  });
+  c.addEventListener('mousemove',  e => {
+    if (!answerWriteOn || !answerDrawing || !answerCtx) return;
+    const r = c.getBoundingClientRect();
+    const x = e.clientX - r.left, y = e.clientY - r.top;
+    answerCtx.beginPath(); answerCtx.moveTo(answerPrevX, answerPrevY);
+    answerCtx.lineTo(x, y); answerCtx.stroke();
+    answerPrevX = x; answerPrevY = y;
+  });
+  c.addEventListener('mouseup',    () => { answerDrawing = false; });
+  c.addEventListener('mouseleave', () => { answerDrawing = false; });
+}
+
+function resetAnswerCanvas() {
+  const c = document.getElementById('answer-line');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = c.getBoundingClientRect();
+  if (!rect.width) return;
+  c.width = rect.width * dpr; c.height = rect.height * dpr;
+  answerCtx = c.getContext('2d');
+  answerCtx.scale(dpr, dpr);
+  // Draw blue baseline
+  answerCtx.strokeStyle = '#64b5f6';
+  answerCtx.lineWidth = 2; answerCtx.lineCap = 'square';
+  const baseY = rect.height - 3;
+  answerCtx.beginPath(); answerCtx.moveTo(0, baseY); answerCtx.lineTo(rect.width, baseY); answerCtx.stroke();
+  answerWriteOn = false; answerDrawing = false;
+  c.style.cursor = 'default';
+}
+
+function enableAnswerCanvas() {
+  if (!answerCtx) return;
+  answerWriteOn = true;
+  answerCtx.strokeStyle = '#1C1C1E';
+  answerCtx.lineWidth = 3; answerCtx.lineCap = 'round'; answerCtx.lineJoin = 'round';
+  document.getElementById('answer-line').style.cursor = 'crosshair';
 }
 
 // ── Teacher / PIN ─────────────────────────────────────────
@@ -418,6 +567,33 @@ function renderTeacher() {
     <div>
       <div class="t-section-title">Filter word sets</div>
       <div id="set-filters"></div>
+    </div>
+    <div>
+      <div class="t-section-title">Learning aids</div>
+      <div class="t-card" id="aids-toggles">
+        <div class="t-row">
+          <div>
+            <div class="t-row-label">Elkonin Boxes</div>
+            <div class="t-row-desc">Phoneme boxes instead of a flat tile row</div>
+          </div>
+          <label class="ios-toggle">
+            <input type="checkbox" id="toggle-elkonin" ${getSetting('feature_elkonin', false) ? 'checked' : ''}>
+            <div class="ios-toggle-track"></div>
+            <div class="ios-toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="t-row">
+          <div>
+            <div class="t-row-label">Write the Word</div>
+            <div class="t-row-desc">Drawing canvas after each word is checked</div>
+          </div>
+          <label class="ios-toggle">
+            <input type="checkbox" id="toggle-write" ${getSetting('feature_write', false) ? 'checked' : ''}>
+            <div class="ios-toggle-track"></div>
+            <div class="ios-toggle-thumb"></div>
+          </label>
+        </div>
+      </div>
     </div>
     <div>
       <div class="t-section-title">Voice</div>
@@ -504,6 +680,8 @@ function renderTeacher() {
       localStorage.removeItem('teacher_pin');
       localStorage.removeItem('spelling_voice');
       localStorage.removeItem('spelling_rate');
+      localStorage.removeItem('feature_elkonin');
+      localStorage.removeItem('feature_write');
       activities.filter(a => a.sets).forEach(a => {
         localStorage.removeItem(`enabled_sets_${a.id}`);
       });
@@ -513,6 +691,14 @@ function renderTeacher() {
       renderTeacher();
       renderHome();
     }
+  });
+
+  // Learning aids toggle listeners
+  document.getElementById('toggle-elkonin').addEventListener('change', e => {
+    localStorage.setItem('feature_elkonin', e.target.checked);
+  });
+  document.getElementById('toggle-write').addEventListener('change', e => {
+    localStorage.setItem('feature_write', e.target.checked);
   });
 
   // Activity toggle listeners
@@ -686,10 +872,12 @@ function bindEvents() {
     if (btn) addLetter(btn.dataset.letter);
   });
 
-  // Answer tiles
+  // Answer tiles / Elkonin boxes
   document.getElementById('answer-tiles').addEventListener('click', e => {
-    const btn = e.target.closest('.answer-tile');
-    if (btn) removeLetter(+btn.dataset.idx);
+    const tile = e.target.closest('.answer-tile');
+    if (tile) { removeLetter(+tile.dataset.idx); return; }
+    const box = e.target.closest('.elkonin-box');
+    if (box) removeFromBox(+box.dataset.boxIdx);
   });
 
   // Symbol card
