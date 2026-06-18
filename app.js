@@ -82,6 +82,9 @@ let mixSetIds  = null;   // non-null = custom mix over these set ids (within one
 let mixLimit   = null;   // max words in a mix round (null = no cap)
 let globalMix  = null;   // non-null = home mix: { actIds: [...], limit }
 let mixMode    = 'activity'; // which builder the mix overlay is currently showing
+let teacherOpen = new Set(); // expanded teacher-settings accordion sections
+let pickTier   = 'all';      // selected tier on a tiered (CEC) picker
+let setFilterOpen = new Set(); // expanded per-activity cards in Word sets
 let wordIdx    = 0;
 let order      = [];
 let answer     = [];
@@ -192,12 +195,14 @@ function renderHome() {
 function renderPick(idx) {
   actIdx = idx;
   const act = activities[idx];
-  const en  = getEnabledSets(act.id);
-  const visibleSets = act.sets.filter(s => en.has(s.id));
-
   document.getElementById('pick-title').textContent = act.name;
   const grid = document.getElementById('set-grid');
   grid.innerHTML = '';
+
+  if (isTieredActivity(act)) { renderPickTiered(act, grid); return; }
+
+  const en  = getEnabledSets(act.id);
+  const visibleSets = act.sets.filter(s => en.has(s.id));
 
   if (visibleSets.length > 1) {
     const totalWords = visibleSets.reduce((n, s) => n + s.words.length, 0);
@@ -245,6 +250,72 @@ function renderPick(idx) {
         <h3>${label}</h3>
         <p>${s.words.length} words${meta.desc ? ' · ' + meta.desc : ''}</p>
       </div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ── Tiered picker (CEC levels: pattern × Core/Extension/Challenge) ──
+const TIER_ORDER = [['core', 'Core'], ['ext', 'Extension'], ['chal', 'Challenge'], ['all', 'All']];
+
+function isTieredActivity(act) {
+  return !!act.sets && act.sets.length > 0 &&
+    act.sets.every(s => /: (Core|Extension|Challenge)$/.test(s.name));
+}
+function tierKeyOf(setName) {
+  const t = setName.split(': ')[1];
+  return t === 'Core' ? 'core' : t === 'Extension' ? 'ext' : 'chal';
+}
+
+function renderPickTiered(act, grid) {
+  const en   = getEnabledSets(act.id);
+  const sets = act.sets.filter(s => en.has(s.id));
+
+  // Group enabled sets by pattern (the bit before the colon), keeping order.
+  const order = [];
+  const byPattern = {};
+  sets.forEach(s => {
+    const p = s.name.split(': ')[0];
+    if (!byPattern[p]) { byPattern[p] = {}; order.push(p); }
+    byPattern[p][tierKeyOf(s.name)] = s;
+  });
+
+  // Tier filter bar.
+  const bar = document.createElement('div');
+  bar.className = 'tier-bar';
+  bar.innerHTML = TIER_ORDER.map(([k, label]) =>
+    `<button class="tier-btn${pickTier === k ? ' active' : ''}" data-tier="${k}">${label}</button>`
+  ).join('');
+  grid.appendChild(bar);
+
+  // Mix… card (custom cross-pattern mix).
+  const actMeta = ACT_META[act.id] || {};
+  const mixCard = document.createElement('div');
+  mixCard.className = 'set-card mix-card';
+  mixCard.dataset.setId = '__mix__';
+  mixCard.innerHTML = `
+    <div class="set-card-hero" style="background:${(actMeta.color || '#888')}20"><span>🎲</span></div>
+    <div class="set-card-body"><h3>Mix…</h3><p>Choose sets &amp; length</p></div>`;
+  grid.appendChild(mixCard);
+
+  // One card per pattern, resolved against the selected tier.
+  order.forEach(p => {
+    const tiers = byPattern[p];
+    const card = document.createElement('div');
+    card.className = 'set-card';
+    let count;
+    if (pickTier === 'all') {
+      const tierSets = Object.values(tiers);
+      count = tierSets.reduce((n, s) => n + s.words.length, 0);
+      card.dataset.mixIds = tierSets.map(s => s.id).join(',');
+    } else {
+      const s = tiers[pickTier];
+      if (!s) return; // this pattern has no words at the selected tier
+      count = s.words.length;
+      card.dataset.setId = s.id;
+    }
+    card.innerHTML = `
+      <div class="set-card-hero" style="background:${(actMeta.color || '#888')}20"><span>🔤</span></div>
+      <div class="set-card-body"><h3>${p}</h3><p>${count} words</p></div>`;
     grid.appendChild(card);
   });
 }
@@ -865,6 +936,7 @@ function verifyPin() {
   const stored = localStorage.getItem('teacher_pin') || DEFAULT_PIN;
   if (pin === stored) {
     document.getElementById('pin-overlay').hidden = true;
+    teacherOpen.clear(); // always start with all sections collapsed
     renderTeacher();
     showScreen('teacher');
   } else {
@@ -881,92 +953,304 @@ function verifyPin() {
   }
 }
 
+// Reusable markup for a toggle row backed by a localStorage flag.
+function toggleRowHTML(id, key, def, label, desc) {
+  return `
+    <div class="t-row">
+      <div>
+        <div class="t-row-label">${label}</div>
+        <div class="t-row-desc">${desc}</div>
+      </div>
+      <label class="ios-toggle">
+        <input type="checkbox" id="${id}" ${getSetting(key, def) ? 'checked' : ''}>
+        <div class="ios-toggle-track"></div>
+        <div class="ios-toggle-thumb"></div>
+      </label>
+    </div>`;
+}
+function bindToggle(id, key, after) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('change', e => {
+    localStorage.setItem(key, e.target.checked);
+    if (after) after();
+  });
+}
+
+// Accordion sections: id, icon, name, body-builder, body-binder.
+const TEACHER_SECTIONS = [
+  ['activities', '📚', 'Activities',     () => teacherActivitiesHTML(), () => bindTeacherActivities()],
+  ['sets',       '🔤', 'Word sets',      () => teacherSetsHTML(),       () => bindTeacherSets()],
+  ['aids',       '🎯', 'Learning aids',  () => teacherAidsHTML(),       () => bindTeacherAids()],
+  ['sound',      '🔊', 'Sound & speech', () => teacherSoundHTML(),      () => bindTeacherSound()],
+  ['admin',      '🔒', 'Admin',          () => teacherAdminHTML(),      () => bindTeacherAdmin()],
+];
+
 function renderTeacher() {
-  const enabled = getEnabledIds();
   const c = document.getElementById('teacher-content');
+  c.innerHTML = TEACHER_SECTIONS.map(([id, icon, name, html]) => {
+    const open = teacherOpen.has(id);
+    return `
+      <div class="t-acc${open ? ' open' : ''}" data-acc="${id}">
+        <button class="t-acc-head" data-acc-toggle="${id}">
+          <span class="t-menu-icon">${icon}</span>
+          <span class="t-acc-name">${name}</span>
+          <span class="t-acc-chevron">⌄</span>
+        </button>
+        <div class="t-acc-body"${open ? '' : ' hidden'}>${html()}</div>
+      </div>`;
+  }).join('');
 
-  const voiceName = selectedVoice
-    ? selectedVoice.name.replace(' (Enhanced)', ' ✦')
-    : 'Default';
+  // Bind each section's controls (elements exist even while collapsed).
+  TEACHER_SECTIONS.forEach(([, , , , bind]) => bind());
 
-  c.innerHTML = `
+  // Accordion expand/collapse - only one section open at a time.
+  c.querySelectorAll('.t-acc-head').forEach(head => {
+    head.addEventListener('click', () => {
+      const willOpen = !teacherOpen.has(head.dataset.accToggle);
+      teacherOpen.clear();
+      if (willOpen) teacherOpen.add(head.dataset.accToggle);
+      c.querySelectorAll('.t-acc').forEach(acc => {
+        const open = teacherOpen.has(acc.dataset.acc);
+        acc.classList.toggle('open', open);
+        acc.querySelector('.t-acc-body').hidden = !open;
+      });
+    });
+  });
+}
+
+// ── Teacher: activities ───────────────────────────────────
+function teacherActivitiesHTML() {
+  return `
     <div>
       <div class="t-section-title">Activities shown to learners</div>
       <div class="t-card" id="act-toggles"></div>
     </div>
     <div>
+      <div class="t-section-title">Challenge</div>
+      <div class="t-card">
+        ${toggleRowHTML('toggle-homemix', 'feature_homemix', false,
+          'Mix on Home Screen', 'Unlock a cross-activity mix card for confident learners')}
+      </div>
+    </div>`;
+}
+function bindTeacherActivities() {
+  const enabled = getEnabledIds();
+  const wrap = document.getElementById('act-toggles');
+  activities.forEach(act => {
+    const meta = ACT_META[act.id] || {};
+    const row  = document.createElement('div');
+    row.className = 't-row';
+    row.innerHTML = `
+      <span class="t-row-label">${meta.icon || ''} ${act.name}</span>
+      <label class="ios-toggle">
+        <input type="checkbox" data-act-id="${act.id}" ${enabled.has(act.id) ? 'checked' : ''}>
+        <div class="ios-toggle-track"></div>
+        <div class="ios-toggle-thumb"></div>
+      </label>`;
+    wrap.appendChild(row);
+  });
+  wrap.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const ids = [...wrap.querySelectorAll('input:checked')].map(i => i.dataset.actId);
+      localStorage.setItem('enabled_activities', JSON.stringify(ids));
+      renderHome();
+    });
+  });
+  bindToggle('toggle-homemix', 'feature_homemix', renderHome);
+}
+
+// ── Teacher: word sets ────────────────────────────────────
+function teacherSetsHTML() {
+  return `<div>
       <div class="t-section-title">Filter word sets</div>
       <div id="set-filters"></div>
-    </div>
+    </div>`;
+}
+// Each activity becomes its own collapsible sub-section (lazy-built on first
+// open) so the page stays short however many levels are added.
+function bindTeacherSets() {
+  const enabled = getEnabledIds();
+  const sfWrap = document.getElementById('set-filters');
+  const acts = activities.filter(a => a.sets && enabled.has(a.id));
+
+  acts.forEach(act => {
+    const open = setFilterOpen.has(act.id);
+    const meta = ACT_META[act.id] || {};
+    const wrap = document.createElement('div');
+    wrap.className = 't-subacc' + (open ? ' open' : '');
+    wrap.innerHTML = `
+      <button class="t-subacc-head">
+        <span class="t-subacc-name">${meta.icon || ''} ${act.name}</span>
+        <span class="t-subacc-count">${act.sets.length}</span>
+        <span class="t-subacc-chevron">⌄</span>
+      </button>
+      <div class="t-subacc-body"${open ? '' : ' hidden'}></div>`;
+    const body = wrap.querySelector('.t-subacc-body');
+
+    const build = () => {
+      if (body.dataset.built) return;
+      body.dataset.built = '1';
+      if (isTieredActivity(act)) buildTieredMatrix(act, body);
+      else buildPlainChips(act, body);
+    };
+    if (open) build();
+
+    wrap.querySelector('.t-subacc-head').addEventListener('click', () => {
+      const willOpen = !setFilterOpen.has(act.id);
+      if (willOpen) { setFilterOpen.add(act.id); build(); }
+      else setFilterOpen.delete(act.id);
+      wrap.classList.toggle('open', willOpen);
+      body.hidden = !willOpen;
+    });
+    sfWrap.appendChild(wrap);
+  });
+
+  if (!acts.length) {
+    sfWrap.innerHTML = `<div class="t-card"><div class="t-empty">No multi-set activities are enabled.</div></div>`;
+  }
+}
+
+function setEnabledSets(actId, ids) {
+  localStorage.setItem(`enabled_sets_${actId}`, JSON.stringify([...ids]));
+}
+
+// Categorise a CEC pattern label so the matrix can group rows.
+function patternCategory(label) {
+  const l = label.toLowerCase().trim();
+  if (/plural/.test(l)) return 'Inflections';
+  if (['-ing', '-ed', '-d', '-s', '-es', '-ies', '-lling/ -lled'].includes(l)) return 'Inflections';
+  if (l.endsWith('-') || ['un', 'a-', 'al-'].includes(l)) return 'Prefixes';
+  if (l.startsWith('-')) return 'Suffixes & endings';
+  return 'Spelling patterns';
+}
+const CATEGORY_ORDER = ['Spelling patterns', 'Prefixes', 'Suffixes & endings', 'Inflections'];
+
+// Flat chip grid for ordinary multi-set activities.
+function buildPlainChips(act, body) {
+  const enabledSets = getEnabledSets(act.id);
+  const chipGrid = document.createElement('div');
+  chipGrid.className = 'set-chip-grid';
+  act.sets.forEach(s => {
+    const sMeta = SET_META[s.id] || {};
+    const btn = document.createElement('button');
+    btn.className = 'set-chip' + (enabledSets.has(s.id) ? ' on' : '');
+    btn.style.setProperty('--chip-color', sMeta.color || '#8E8E93');
+    btn.innerHTML = `${sMeta.icon || ''} <strong>${s.id}</strong>`;
+    btn.addEventListener('click', () => {
+      const cur = getEnabledSets(act.id);
+      if (cur.has(s.id)) { if (cur.size > 1) cur.delete(s.id); }
+      else cur.add(s.id);
+      setEnabledSets(act.id, cur);
+      btn.className = 'set-chip' + (cur.has(s.id) ? ' on' : '');
+    });
+    chipGrid.appendChild(btn);
+  });
+  body.appendChild(chipGrid);
+}
+
+// Pattern × tier matrix (grouped by category) for tiered CEC activities.
+function buildTieredMatrix(act, body) {
+  const order = [];
+  const byPattern = {};
+  act.sets.forEach(s => {
+    const p = s.name.split(': ')[0];
+    if (!byPattern[p]) { byPattern[p] = {}; order.push(p); }
+    byPattern[p][tierKeyOf(s.name)] = s.id;
+  });
+
+  // Group patterns by category, preserving original order within each.
+  const groups = CATEGORY_ORDER
+    .map(cat => [cat, order.filter(p => patternCategory(p) === cat)])
+    .filter(([, ps]) => ps.length);
+  const showCats = groups.length > 1;
+
+  const rowHTML = p => `
+    <div class="tm-row">
+      <span class="tm-pattern">${p}</span>
+      ${['core', 'ext', 'chal'].map(t => byPattern[p][t]
+        ? `<button class="tm-cell" data-set-id="${byPattern[p][t]}"></button>`
+        : `<span class="tm-cell tm-empty"></span>`).join('')}
+    </div>`;
+
+  body.innerHTML = `
+    <div class="tm-bulk"><button data-bulk="all">All</button><button data-bulk="none">None</button></div>
+    <div class="tier-matrix">
+      <div class="tm-row tm-head">
+        <span class="tm-pattern"></span>
+        <button class="tm-col" data-col="core">Core</button>
+        <button class="tm-col" data-col="ext">Ext</button>
+        <button class="tm-col" data-col="chal">Chal</button>
+      </div>
+      ${groups.map(([cat, ps]) =>
+        (showCats ? `<div class="tm-cat">${cat}</div>` : '') + ps.map(rowHTML).join('')
+      ).join('')}
+    </div>`;
+
+  const matrix = body.querySelector('.tier-matrix');
+  const refresh = () => {
+    const cur = getEnabledSets(act.id);
+    matrix.querySelectorAll('.tm-cell[data-set-id]').forEach(c =>
+      c.classList.toggle('on', cur.has(c.dataset.setId)));
+  };
+  refresh();
+
+  matrix.addEventListener('click', e => {
+    const cur = getEnabledSets(act.id);
+    const cell = e.target.closest('.tm-cell[data-set-id]');
+    if (cell) {
+      const id = cell.dataset.setId;
+      if (cur.has(id)) cur.delete(id); else cur.add(id);
+      setEnabledSets(act.id, cur); refresh(); return;
+    }
+    const col = e.target.closest('.tm-col');
+    if (col) {
+      const ids = order.map(p => byPattern[p][col.dataset.col]).filter(Boolean);
+      const allOn = ids.every(id => cur.has(id));
+      ids.forEach(id => allOn ? cur.delete(id) : cur.add(id));
+      setEnabledSets(act.id, cur); refresh();
+    }
+  });
+
+  body.querySelector('[data-bulk="all"]').addEventListener('click', () => {
+    setEnabledSets(act.id, act.sets.map(s => s.id)); refresh();
+  });
+  body.querySelector('[data-bulk="none"]').addEventListener('click', () => {
+    setEnabledSets(act.id, []); refresh();
+  });
+}
+
+// ── Teacher: learning aids (display & input) ──────────────
+function teacherAidsHTML() {
+  return `
     <div>
-      <div class="t-section-title">Learning aids</div>
-      <div class="t-card" id="aids-toggles">
-        <div class="t-row">
-          <div>
-            <div class="t-row-label">Elkonin Boxes</div>
-            <div class="t-row-desc">Phoneme boxes instead of a flat tile row</div>
-          </div>
-          <label class="ios-toggle">
-            <input type="checkbox" id="toggle-elkonin" ${getSetting('feature_elkonin', false) ? 'checked' : ''}>
-            <div class="ios-toggle-track"></div>
-            <div class="ios-toggle-thumb"></div>
-          </label>
-        </div>
-        <div class="t-row">
-          <div>
-            <div class="t-row-label">Write the Word</div>
-            <div class="t-row-desc">Drawing canvas after each word is checked</div>
-          </div>
-          <label class="ios-toggle">
-            <input type="checkbox" id="toggle-write" ${getSetting('feature_write', false) ? 'checked' : ''}>
-            <div class="ios-toggle-track"></div>
-            <div class="ios-toggle-thumb"></div>
-          </label>
-        </div>
-        <div class="t-row">
-          <div>
-            <div class="t-row-label">QWERTY Keyboard</div>
-            <div class="t-row-desc">Tiles in keyboard order instead of A-Z</div>
-          </div>
-          <label class="ios-toggle">
-            <input type="checkbox" id="toggle-qwerty" ${getSetting('feature_qwerty', false) ? 'checked' : ''}>
-            <div class="ios-toggle-track"></div>
-            <div class="ios-toggle-thumb"></div>
-          </label>
-        </div>
-        <div class="t-row">
-          <div>
-            <div class="t-row-label">Celebration Sound</div>
-            <div class="t-row-desc">Play a chime when a round is all correct</div>
-          </div>
-          <label class="ios-toggle">
-            <input type="checkbox" id="toggle-sound" ${getSetting('feature_sound', true) ? 'checked' : ''}>
-            <div class="ios-toggle-track"></div>
-            <div class="ios-toggle-thumb"></div>
-          </label>
-        </div>
-        <div class="t-row">
-          <div>
-            <div class="t-row-label">Say Each Word Twice</div>
-            <div class="t-row-desc">Reads the word, pauses, then repeats it</div>
-          </div>
-          <label class="ios-toggle">
-            <input type="checkbox" id="toggle-saytwice" ${getSetting('feature_saytwice', true) ? 'checked' : ''}>
-            <div class="ios-toggle-track"></div>
-            <div class="ios-toggle-thumb"></div>
-          </label>
-        </div>
-        <div class="t-row">
-          <div>
-            <div class="t-row-label">Mix on Home Screen</div>
-            <div class="t-row-desc">Unlock a cross-activity mix card for confident learners</div>
-          </div>
-          <label class="ios-toggle">
-            <input type="checkbox" id="toggle-homemix" ${getSetting('feature_homemix', false) ? 'checked' : ''}>
-            <div class="ios-toggle-track"></div>
-            <div class="ios-toggle-thumb"></div>
-          </label>
-        </div>
+      <div class="t-section-title">Display &amp; input</div>
+      <div class="t-card">
+        ${toggleRowHTML('toggle-elkonin', 'feature_elkonin', false,
+          'Elkonin Boxes', 'Phoneme boxes instead of a flat tile row')}
+        ${toggleRowHTML('toggle-write', 'feature_write', false,
+          'Write the Word', 'Drawing canvas after each word is checked')}
+        ${toggleRowHTML('toggle-qwerty', 'feature_qwerty', false,
+          'QWERTY Keyboard', 'Tiles in keyboard order instead of A-Z')}
+      </div>
+    </div>`;
+}
+function bindTeacherAids() {
+  bindToggle('toggle-elkonin', 'feature_elkonin');
+  bindToggle('toggle-write', 'feature_write');
+  bindToggle('toggle-qwerty', 'feature_qwerty');
+}
+
+// ── Teacher: sound & speech ───────────────────────────────
+function teacherSoundHTML() {
+  return `
+    <div>
+      <div class="t-section-title">Sound</div>
+      <div class="t-card">
+        ${toggleRowHTML('toggle-sound', 'feature_sound', true,
+          'Celebration Sound', 'Play a chime when a round is all correct')}
+        ${toggleRowHTML('toggle-saytwice', 'feature_saytwice', true,
+          'Say Each Word Twice', 'Reads the word, pauses, then repeats it')}
       </div>
     </div>
     <div>
@@ -986,7 +1270,33 @@ function renderTeacher() {
           <button class="t-btn-row" id="t-test-btn" style="background:var(--blue);color:#fff;border-radius:8px;padding:7px 14px;font-weight:700;font-size:14px;border:none;">▶ Play</button>
         </div>
       </div>
-    </div>
+    </div>`;
+}
+function bindTeacherSound() {
+  bindToggle('toggle-sound', 'feature_sound');
+  bindToggle('toggle-saytwice', 'feature_saytwice');
+
+  const vsel = document.getElementById('t-voice-select');
+  populateVoiceSelect(vsel);
+  vsel.addEventListener('change', e => {
+    const v = window.speechSynthesis.getVoices().find(v => v.name === e.target.value);
+    if (v) { selectedVoice = v; localStorage.setItem('spelling_voice', v.name); }
+  });
+
+  document.getElementById('t-rate').addEventListener('input', e => {
+    speechRate = parseFloat(e.target.value);
+    document.getElementById('t-rate-val').textContent = `${speechRate.toFixed(2)}×`;
+    localStorage.setItem('spelling_rate', speechRate);
+    syncRateUI();
+  });
+  document.getElementById('t-test-btn').addEventListener('click', () => {
+    speak('Can you spell the word?');
+  });
+}
+
+// ── Teacher: admin ────────────────────────────────────────
+function teacherAdminHTML() {
+  return `
     <div>
       <div class="t-section-title">Security</div>
       <div class="t-card">
@@ -1004,40 +1314,8 @@ function renderTeacher() {
         </div>
       </div>
     </div>`;
-
-  // Activity toggles
-  const toggleWrap = document.getElementById('act-toggles');
-  activities.forEach(act => {
-    const meta = ACT_META[act.id] || {};
-    const row  = document.createElement('div');
-    row.className = 't-row';
-    const isOn = enabled.has(act.id);
-    row.innerHTML = `
-      <span class="t-row-label">${meta.icon || ''} ${act.name}</span>
-      <label class="ios-toggle">
-        <input type="checkbox" data-act-id="${act.id}" ${isOn ? 'checked' : ''}>
-        <div class="ios-toggle-track"></div>
-        <div class="ios-toggle-thumb"></div>
-      </label>`;
-    toggleWrap.appendChild(row);
-  });
-
-  // Voice select
-  const vsel = document.getElementById('t-voice-select');
-  populateVoiceSelect(vsel);
-
-  // Rate slider
-  document.getElementById('t-rate').addEventListener('input', e => {
-    speechRate = parseFloat(e.target.value);
-    document.getElementById('t-rate-val').textContent = `${speechRate.toFixed(2)}×`;
-    localStorage.setItem('spelling_rate', speechRate);
-    syncRateUI();
-  });
-
-  document.getElementById('t-test-btn').addEventListener('click', () => {
-    speak('Can you spell the word?');
-  });
-
+}
+function bindTeacherAdmin() {
   document.getElementById('change-pin-row').addEventListener('click', () => {
     const np = prompt('Enter new 4-digit PIN (numbers only):');
     if (np && /^\d{4}$/.test(np)) {
@@ -1070,76 +1348,6 @@ function renderTeacher() {
       renderTeacher();
       renderHome();
     }
-  });
-
-  // Learning aids toggle listeners
-  document.getElementById('toggle-elkonin').addEventListener('change', e => {
-    localStorage.setItem('feature_elkonin', e.target.checked);
-  });
-  document.getElementById('toggle-write').addEventListener('change', e => {
-    localStorage.setItem('feature_write', e.target.checked);
-  });
-  document.getElementById('toggle-qwerty').addEventListener('change', e => {
-    localStorage.setItem('feature_qwerty', e.target.checked);
-  });
-  document.getElementById('toggle-sound').addEventListener('change', e => {
-    localStorage.setItem('feature_sound', e.target.checked);
-  });
-  document.getElementById('toggle-saytwice').addEventListener('change', e => {
-    localStorage.setItem('feature_saytwice', e.target.checked);
-  });
-  document.getElementById('toggle-homemix').addEventListener('change', e => {
-    localStorage.setItem('feature_homemix', e.target.checked);
-    renderHome();
-  });
-
-  // Activity toggle listeners
-  toggleWrap.querySelectorAll('input[type=checkbox]').forEach(cb => {
-    cb.addEventListener('change', () => {
-      const ids = [...toggleWrap.querySelectorAll('input:checked')].map(i => i.dataset.actId);
-      localStorage.setItem('enabled_activities', JSON.stringify(ids));
-      renderHome();
-    });
-  });
-
-  // Set filter chips
-  const sfWrap = document.getElementById('set-filters');
-  activities.filter(a => a.sets && enabled.has(a.id)).forEach(act => {
-    const card = document.createElement('div');
-    card.className = 't-card t-set-card';
-    const enabledSets = getEnabledSets(act.id);
-    const actMeta = ACT_META[act.id] || {};
-
-    const heading = document.createElement('div');
-    heading.className = 't-sub-heading';
-    heading.textContent = `${actMeta.icon || ''} ${act.name}`;
-    card.appendChild(heading);
-
-    const chipGrid = document.createElement('div');
-    chipGrid.className = 'set-chip-grid';
-
-    act.sets.forEach(s => {
-      const sMeta = SET_META[s.id] || {};
-      const btn = document.createElement('button');
-      btn.className = 'set-chip' + (enabledSets.has(s.id) ? ' on' : '');
-      btn.dataset.setId = s.id;
-      btn.style.setProperty('--chip-color', sMeta.color || '#8E8E93');
-      btn.innerHTML = `${sMeta.icon || ''} <strong>${s.id}</strong>`;
-      btn.addEventListener('click', () => {
-        const cur = getEnabledSets(act.id);
-        if (cur.has(s.id)) {
-          if (cur.size > 1) cur.delete(s.id);
-        } else {
-          cur.add(s.id);
-        }
-        localStorage.setItem(`enabled_sets_${act.id}`, JSON.stringify([...cur]));
-        btn.className = 'set-chip' + (cur.has(s.id) ? ' on' : '');
-      });
-      chipGrid.appendChild(btn);
-    });
-
-    card.appendChild(chipGrid);
-    sfWrap.appendChild(card);
   });
 }
 
@@ -1246,9 +1454,12 @@ function bindEvents() {
 
   // Pick: set card tapped
   document.getElementById('set-grid').addEventListener('click', e => {
+    const tierBtn = e.target.closest('.tier-btn');
+    if (tierBtn) { pickTier = tierBtn.dataset.tier; renderPick(actIdx); return; }
     const card = e.target.closest('.set-card');
     if (!card) return;
     if (card.dataset.setId === '__mix__') { openMix(); return; }
+    if (card.dataset.mixIds) { startMix(actIdx, card.dataset.mixIds.split(','), 0); return; }
     startSpelling(actIdx, card.dataset.setId);
   });
 

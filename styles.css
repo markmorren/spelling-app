@@ -159,6 +159,25 @@ svg    { display: block; }
   padding: 16px 20px 20px;
 }
 
+.tier-bar {
+  grid-column: 1 / -1;
+  display: flex; gap: 6px;
+  background: #e5e5ea;
+  border-radius: var(--r-md);
+  padding: 4px;
+}
+.tier-btn {
+  flex: 1; padding: 9px 4px;
+  border: none; background: none;
+  border-radius: 8px;
+  font-size: 14px; font-weight: 700; color: var(--label2);
+  cursor: pointer;
+}
+.tier-btn.active {
+  background: var(--card); color: var(--label);
+  box-shadow: var(--shadow-sm);
+}
+
 .set-card {
   background: var(--card);
   border-radius: var(--r-xl);
@@ -492,6 +511,106 @@ svg    { display: block; }
 .t-btn-row .t-arrow { color: var(--label3); font-size: 18px; }
 
 .t-danger { color: var(--red) !important; }
+
+/* Teacher accordion */
+.t-acc {
+  background: var(--card); border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm); overflow: hidden;
+}
+.t-acc-head {
+  display: flex; align-items: center; gap: 14px;
+  width: 100%; padding: 16px;
+  background: none; border: none; text-align: left; cursor: pointer;
+}
+.t-acc-head:active { background: rgba(0,0,0,.04); }
+.t-menu-icon { font-size: 24px; flex-shrink: 0; width: 30px; text-align: center; }
+.t-acc-name { flex: 1; font-size: 17px; font-weight: 600; color: var(--label); }
+.t-acc-chevron {
+  color: var(--label3); font-size: 20px; flex-shrink: 0;
+  transition: transform .2s; line-height: 1;
+}
+.t-acc.open .t-acc-chevron { transform: rotate(180deg); }
+.t-acc-body {
+  padding: 4px 12px 14px;
+  display: flex; flex-direction: column; gap: 18px;
+  border-top: 1px solid var(--separator);
+}
+.t-acc-body[hidden] { display: none; }
+
+#set-filters { display: flex; flex-direction: column; gap: 16px; }
+.t-empty { padding: 14px 16px; font-size: 15px; color: var(--label3); }
+
+/* Per-activity collapsible cards inside Word sets */
+.t-subacc {
+  background: var(--card); border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm); overflow: hidden;
+}
+.t-subacc-head {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 14px 16px;
+  background: none; border: none; text-align: left; cursor: pointer;
+}
+.t-subacc-head:active { background: rgba(0,0,0,.04); }
+.t-subacc-name { flex: 1; font-size: 16px; font-weight: 600; color: var(--label); }
+.t-subacc-count {
+  font-size: 12px; font-weight: 700; color: var(--label3);
+  background: var(--bg); border-radius: 999px; padding: 2px 9px;
+}
+.t-subacc-chevron { color: var(--label3); font-size: 18px; transition: transform .2s; }
+.t-subacc.open .t-subacc-chevron { transform: rotate(180deg); }
+.t-subacc-body { padding: 0 16px 14px; border-top: 1px solid var(--separator); }
+.t-subacc-body[hidden] { display: none; }
+.t-subacc-body .set-chip-grid { margin-top: 12px; }
+
+/* Tiered set matrix (pattern × Core/Ext/Chal) */
+.tm-cat {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.4px;
+  color: var(--label3); text-transform: uppercase;
+  padding: 12px 0 2px;
+}
+.tm-bulk { display: flex; gap: 6px; justify-content: flex-end; padding-top: 12px; }
+.tm-bulk button {
+  font-size: 12px; font-weight: 700;
+  padding: 4px 12px; border-radius: 999px;
+  background: #e5e5ea; color: var(--label2); border: none; cursor: pointer;
+}
+.tier-matrix { display: flex; flex-direction: column; margin-top: 4px; padding-left: 16px; }
+.tm-row {
+  display: grid; grid-template-columns: 1fr 52px 52px 52px;
+  align-items: center; gap: 4px;
+  padding: 5px 0; border-bottom: 1px solid var(--separator);
+}
+.tm-row:last-child { border-bottom: none; }
+.tm-pattern {
+  justify-self: start;
+  max-width: 100%;
+  padding: 5px 12px;
+  border-radius: 16px;
+  border: 2px solid var(--separator);
+  background: var(--bg);
+  color: var(--label);
+  font-size: 14px; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.tm-head .tm-pattern { border: none; background: none; padding: 0; }
+.tm-col {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.4px;
+  color: var(--label3); text-transform: uppercase;
+  background: none; border: none; cursor: pointer; padding: 4px 0;
+}
+.tm-cell {
+  justify-self: center;
+  width: 26px; height: 26px; border-radius: 7px;
+  border: 2px solid var(--separator); background: var(--card);
+  cursor: pointer; position: relative; padding: 0;
+}
+.tm-cell.on { background: var(--green); border-color: var(--green); }
+.tm-cell.on::after {
+  content: '✓'; color: #fff; font-size: 15px; font-weight: 800;
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.tm-empty { border: none; background: none; cursor: default; }
 
 .t-voice-label { font-size: 16px; color: var(--label); }
 .t-voice-select {
