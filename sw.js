@@ -1,4 +1,4 @@
-const CACHE = 'spelling-v8';
+const CACHE = 'spelling-v19';
 const ASSETS = [
   '/',
   '/index.html',
@@ -26,6 +26,24 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   const url = e.request.url;
+
+  // Cache-on-first-play for pre-recorded word clips, so a set works offline
+  // once it has been used at least once online.
+  if (url.includes('/audio/')) {
+    e.respondWith(
+      caches.match(e.request).then(cached => {
+        if (cached) return cached;
+        return fetch(e.request).then(res => {
+          if (res.ok) {
+            const clone = res.clone();
+            caches.open(CACHE).then(c => c.put(e.request, clone));
+          }
+          return res;
+        }).catch(() => cached || new Response('', { status: 404 }));
+      })
+    );
+    return;
+  }
 
   // Cache-first for local assets
   // Network-first-then-cache for ARASAAC images (so updates arrive when online)

@@ -345,6 +345,690 @@
           ]
         }
       ]
+    },
+    {
+      "id": "cec-level-7",
+      "name": "CEC Level 7",
+      "sets": [
+        {
+          "id": "l7-cc-core", "name": "cc: Core",
+          "words": [
+            {"word":"accent","sound":"cc"},{"word":"accident","sound":"cc"},{"word":"success","sound":"cc"},
+            {"word":"accessories","sound":"cc"}
+          ]
+        },
+        {
+          "id": "l7-cc-ext", "name": "cc: Extension",
+          "words": [
+            {"word":"accelerate","sound":"cc"},{"word":"access","sound":"cc"},{"word":"accessible","sound":"cc"}
+          ]
+        },
+        {
+          "id": "l7-cc-chal", "name": "cc: Challenge",
+          "words": [
+            {"word":"accept","sound":"cc"},{"word":"eccentric","sound":"cc"},{"word":"succinct","sound":"cc"}
+          ]
+        },
+        {
+          "id": "l7-xc-core", "name": "xc: Core",
+          "words": [
+            {"word":"exceed","sound":"xc"},{"word":"exceptional","sound":"xc"},{"word":"excite","sound":"xc"},
+            {"word":"overexcite","sound":"xc"},{"word":"excavate","sound":"xc"}
+          ]
+        },
+        {
+          "id": "l7-xc-ext", "name": "xc: Extension",
+          "words": [
+            {"word":"excellent","sound":"xc"},{"word":"except","sound":"xc"},{"word":"exclusive","sound":"xc"},
+            {"word":"excused","sound":"xc"},{"word":"excavation","sound":"xc"}
+          ]
+        },
+        {
+          "id": "l7-xc-chal", "name": "xc: Challenge",
+          "words": [
+            {"word":"excel","sound":"xc"},{"word":"excursion","sound":"xc"},{"word":"exclaim","sound":"xc"},
+            {"word":"exchangeable","sound":"xc"},{"word":"exchanging","sound":"xc"}
+          ]
+        },
+        {
+          "id": "l7-ci-core", "name": "ci: Core",
+          "words": [
+            {"word":"ancient","sound":"ci"},{"word":"commercial","sound":"ci"},{"word":"special","sound":"ci"},
+            {"word":"efficient","sound":"ci"},{"word":"musician","sound":"ci"},{"word":"optician","sound":"ci"},
+            {"word":"sufficient","sound":"ci"},{"word":"malicious","sound":"ci"}
+          ]
+        },
+        {
+          "id": "l7-ci-ext", "name": "ci: Extension",
+          "words": [
+            {"word":"artificial","sound":"ci"},{"word":"social","sound":"ci"},{"word":"delicious","sound":"ci"},
+            {"word":"magician","sound":"ci"},{"word":"financial","sound":"ci"},{"word":"politician","sound":"ci"},
+            {"word":"suspicious","sound":"ci"},{"word":"precocious","sound":"ci"}
+          ]
+        },
+        {
+          "id": "l7-ci-chal", "name": "ci: Challenge",
+          "words": [
+            {"word":"racial","sound":"ci"},{"word":"conscious","sound":"ci"},{"word":"precious","sound":"ci"},
+            {"word":"especially","sound":"ci"},{"word":"official","sound":"ci"},{"word":"precious","sound":"ci"},
+            {"word":"beneficiaries","sound":"ci"}
+          ]
+        },
+        {
+          "id": "l7-ti-core", "name": "ti: Core",
+          "words": [
+            {"word":"initial","sound":"ti"},{"word":"confidential","sound":"ti"},{"word":"torrential","sound":"ti"},
+            {"word":"fictitious","sound":"ti"},{"word":"sensational","sound":"ti"}
+          ]
+        },
+        {
+          "id": "l7-ti-ext", "name": "ti: Extension",
+          "words": [
+            {"word":"circumstantial","sound":"ti"},{"word":"patient","sound":"ti"},{"word":"influential","sound":"ti"},
+            {"word":"mention","sound":"ti"},{"word":"suggestion","sound":"ti"}
+          ]
+        },
+        {
+          "id": "l7-ti-chal", "name": "ti: Challenge",
+          "words": [
+            {"word":"partial","sound":"ti"},{"word":"essential","sound":"ti"},{"word":"fraction","sound":"ti"},
+            {"word":"vaccination","sound":"ti"},{"word":"cautious","sound":"ti"}
+          ]
+        },
+        {
+          "id": "l7-dis-core", "name": "dis-: Core",
+          "words": [
+            {"word":"disallow","sound":"dis"},{"word":"disappear","sound":"dis"},{"word":"discolour","sound":"dis"},
+            {"word":"disassemble","sound":"dis"},{"word":"discharge","sound":"dis"},{"word":"disembark","sound":"dis"},
+            {"word":"disfigure","sound":"dis"},{"word":"disinterested","sound":"dis"},{"word":"discontent","sound":"dis"},
+            {"word":"dissimilar","sound":"dis"}
+          ]
+        },
+        {
+          "id": "l7-dis-ext", "name": "dis-: Extension",
+          "words": [
+            {"word":"disadvantage","sound":"dis"},{"word":"disable","sound":"dis"},{"word":"disapprove","sound":"dis"},
+            {"word":"disinfect","sound":"dis"},{"word":"discontinue","sound":"dis"},{"word":"disjointed","sound":"dis"},
+            {"word":"dishearten","sound":"dis"},{"word":"disconnect","sound":"dis"},{"word":"disqualify","sound":"dis"},
+            {"word":"distasteful","sound":"dis"}
+          ]
+        },
+        {
+          "id": "l7-dis-chal", "name": "dis-: Challenge",
+          "words": [
+            {"word":"disease","sound":"dis"},{"word":"disappoint","sound":"dis"},{"word":"disbelief","sound":"dis"},
+            {"word":"disbelieve","sound":"dis"},{"word":"dishonest","sound":"dis"},{"word":"disembowel","sound":"dis"},
+            {"word":"discomfort","sound":"dis"},{"word":"disobedient","sound":"dis"},{"word":"dissatisfy","sound":"dis"},
+            {"word":"disqualified","sound":"dis"}
+          ]
+        },
+        {
+          "id": "l7-im-core", "name": "im-: Core",
+          "words": [
+            {"word":"immoral","sound":"im"},{"word":"impatient","sound":"im"},{"word":"impossible","sound":"im"},
+            {"word":"impermanent","sound":"im"},{"word":"imbalance","sound":"im"},{"word":"impervious","sound":"im"},
+            {"word":"imprecise","sound":"im"},{"word":"impeccable","sound":"im"}
+          ]
+        },
+        {
+          "id": "l7-im-ext", "name": "im-: Extension",
+          "words": [
+            {"word":"impassable","sound":"im"},{"word":"immobile","sound":"im"},{"word":"imperfect","sound":"im"},
+            {"word":"improper","sound":"im"},{"word":"imperturbable","sound":"im"},{"word":"implausible","sound":"im"},
+            {"word":"impregnable","sound":"im"},{"word":"immaculate","sound":"im"}
+          ]
+        },
+        {
+          "id": "l7-im-chal", "name": "im-: Challenge",
+          "words": [
+            {"word":"impolite","sound":"im"},{"word":"imperceptible","sound":"im"},{"word":"immortal","sound":"im"},
+            {"word":"impermeable","sound":"im"},{"word":"immature","sound":"im"},{"word":"impractical","sound":"im"},
+            {"word":"improbable","sound":"im"},{"word":"imperturbable","sound":"im"}
+          ]
+        },
+        {
+          "id": "l7-in-core", "name": "in-: Core",
+          "words": [
+            {"word":"informal","sound":"in"},{"word":"inaccurate","sound":"in"},{"word":"indecent","sound":"in"},
+            {"word":"inarticulate","sound":"in"},{"word":"inability","sound":"in"},{"word":"incapable","sound":"in"},
+            {"word":"incredible","sound":"in"},{"word":"inconvenient","sound":"in"},{"word":"independent","sound":"in"},
+            {"word":"inexcusable","sound":"in"},{"word":"insignificant","sound":"in"}
+          ]
+        },
+        {
+          "id": "l7-in-ext", "name": "in-: Extension",
+          "words": [
+            {"word":"inaccessible","sound":"in"},{"word":"inedible","sound":"in"},{"word":"inadequate","sound":"in"},
+            {"word":"invisible","sound":"in"},{"word":"inaudible","sound":"in"},{"word":"injury","sound":"in"},
+            {"word":"inconsiderate","sound":"in"},{"word":"inundated","sound":"in"},{"word":"indigestion","sound":"in"},
+            {"word":"inexpensive","sound":"in"},{"word":"insincere","sound":"in"}
+          ]
+        },
+        {
+          "id": "l7-in-chal", "name": "in-: Challenge",
+          "words": [
+            {"word":"incorrect","sound":"in"},{"word":"involuntary","sound":"in"},{"word":"inactive","sound":"in"},
+            {"word":"inattentive","sound":"in"},{"word":"inflow","sound":"in"},{"word":"incomplete","sound":"in"},
+            {"word":"insomnia","sound":"in"},{"word":"indefinite","sound":"in"},{"word":"inefficient","sound":"in"},
+            {"word":"insensitive","sound":"in"}
+          ]
+        },
+        {
+          "id": "l7-il-core", "name": "il-: Core",
+          "words": [
+            {"word":"illegal","sound":"il"},{"word":"illiterate","sound":"il"},{"word":"illogical","sound":"il"},
+            {"word":"illiterate","sound":"il"},{"word":"illustrious","sound":"il"}
+          ]
+        },
+        {
+          "id": "l7-il-ext", "name": "il-: Extension",
+          "words": [
+            {"word":"illegible","sound":"il"},{"word":"illicit","sound":"il"},{"word":"illegibility","sound":"il"},
+            {"word":"illuminated","sound":"il"}
+          ]
+        },
+        {
+          "id": "l7-il-chal", "name": "il-: Challenge",
+          "words": [
+            {"word":"illegible","sound":"il"},{"word":"illegitimate","sound":"il"},{"word":"illusions","sound":"il"},
+            {"word":"illustrated","sound":"il"}
+          ]
+        },
+        {
+          "id": "l7-ir-core", "name": "ir-: Core",
+          "words": [
+            {"word":"irrational","sound":"ir"},{"word":"irresistible","sound":"ir"},{"word":"irregular","sound":"ir"},
+            {"word":"ironies","sound":"ir"},{"word":"irrational","sound":"ir"}
+          ]
+        },
+        {
+          "id": "l7-ir-ext", "name": "ir-: Extension",
+          "words": [
+            {"word":"irregular","sound":"ir"},{"word":"irksome","sound":"ir"},{"word":"irreversible","sound":"ir"},
+            {"word":"irrelevant","sound":"ir"}
+          ]
+        },
+        {
+          "id": "l7-ir-chal", "name": "ir-: Challenge",
+          "words": [
+            {"word":"irremovable","sound":"ir"},{"word":"irresponsible","sound":"ir"},{"word":"irritable","sound":"ir"},
+            {"word":"irradiate","sound":"ir"}
+          ]
+        },
+        {
+          "id": "l7-anti-core", "name": "anti-: Core",
+          "words": [
+            {"word":"antics","sound":"anti"},{"word":"antiseptic","sound":"anti"},{"word":"antifreeze","sound":"anti"},
+            {"word":"antiwar","sound":"anti"}
+          ]
+        },
+        {
+          "id": "l7-anti-ext", "name": "anti-: Extension",
+          "words": [
+            {"word":"antibiotic","sound":"anti"},{"word":"antihero","sound":"anti"},{"word":"anticlockwise","sound":"anti"}
+          ]
+        },
+        {
+          "id": "l7-anti-chal", "name": "anti-: Challenge",
+          "words": [
+            {"word":"anticlimax","sound":"anti"},{"word":"antibacterial","sound":"anti"},{"word":"antidote","sound":"anti"}
+          ]
+        },
+        {
+          "id": "l7-mis-core", "name": "mis-: Core",
+          "words": [
+            {"word":"misinform","sound":"mis"},{"word":"miscalculate","sound":"mis"},{"word":"misstate","sound":"mis"},
+            {"word":"mismanage","sound":"mis"},{"word":"mishandled","sound":"mis"},{"word":"misassembled","sound":"mis"}
+          ]
+        },
+        {
+          "id": "l7-mis-ext", "name": "mis-: Extension",
+          "words": [
+            {"word":"misadventure","sound":"mis"},{"word":"misfortune","sound":"mis"},{"word":"misinterpret","sound":"mis"},
+            {"word":"mischannelled","sound":"mis"},{"word":"misunderstand","sound":"mis"},{"word":"miscellaneous","sound":"mis"}
+          ]
+        },
+        {
+          "id": "l7-mis-chal", "name": "mis-: Challenge",
+          "words": [
+            {"word":"misjudge","sound":"mis"},{"word":"misallocated","sound":"mis"},{"word":"misbehaved","sound":"mis"},
+            {"word":"misarticulated","sound":"mis"},{"word":"mischief","sound":"mis"},{"word":"misdiagnosed","sound":"mis"}
+          ]
+        },
+        {
+          "id": "l7-un-core", "name": "un: Core",
+          "words": [
+            {"word":"unarmed","sound":"un"},{"word":"unachievable","sound":"un"},{"word":"unearth","sound":"un"},
+            {"word":"unashamedly","sound":"un"},{"word":"unguarded","sound":"un"},{"word":"unattractive","sound":"un"},
+            {"word":"underground","sound":"un"},{"word":"unbreakable","sound":"un"},{"word":"undone","sound":"un"},
+            {"word":"unconscious","sound":"un"},{"word":"unless","sound":"un"},{"word":"ungrateful","sound":"un"},
+            {"word":"unwelcome","sound":"un"},{"word":"unpleasant","sound":"un"},{"word":"unqualified","sound":"un"}
+          ]
+        },
+        {
+          "id": "l7-un-ext", "name": "un: Extension",
+          "words": [
+            {"word":"unaccompanied","sound":"un"},{"word":"unbeaten","sound":"un"},{"word":"unappealing","sound":"un"},
+            {"word":"unfurnished","sound":"un"},{"word":"unattainable","sound":"un"},{"word":"unfortunate","sound":"un"},
+            {"word":"unbelievable","sound":"un"},{"word":"unable","sound":"un"},{"word":"uncomfortable","sound":"un"},
+            {"word":"uncommon","sound":"un"},{"word":"undisturbed","sound":"un"},{"word":"unsafe","sound":"un"},
+            {"word":"unofficial","sound":"un"},{"word":"unwrap","sound":"un"},{"word":"unsociable","sound":"un"}
+          ]
+        },
+        {
+          "id": "l7-un-chal", "name": "un: Challenge",
+          "words": [
+            {"word":"unaware","sound":"un"},{"word":"unannounced","sound":"un"},{"word":"unusual","sound":"un"},
+            {"word":"unattached","sound":"un"},{"word":"unhappy","sound":"un"},{"word":"unavoidable","sound":"un"},
+            {"word":"uncanny","sound":"un"},{"word":"uncertain","sound":"un"},{"word":"unafraid","sound":"un"},
+            {"word":"undisputed","sound":"un"},{"word":"unlikely","sound":"un"},{"word":"unmistakeable","sound":"un"},
+            {"word":"unwise","sound":"un"},{"word":"unpopular","sound":"un"}
+          ]
+        },
+        {
+          "id": "l7-ary-core", "name": "-ary: Core",
+          "words": [
+            {"word":"salary","sound":"ary"},{"word":"dictionary","sound":"ary"},{"word":"wary","sound":"ary"},
+            {"word":"January","sound":"ary"},{"word":"dreary","sound":"ary"},{"word":"necessary","sound":"ary"},
+            {"word":"secretary","sound":"ary"},{"word":"contemporary","sound":"ary"}
+          ]
+        },
+        {
+          "id": "l7-ary-ext", "name": "-ary: Extension",
+          "words": [
+            {"word":"anniversary","sound":"ary"},{"word":"ordinary","sound":"ary"},{"word":"February","sound":"ary"},
+            {"word":"diary","sound":"ary"},{"word":"military","sound":"ary"},{"word":"revolutionary","sound":"ary"},
+            {"word":"stationary","sound":"ary"}
+          ]
+        },
+        {
+          "id": "l7-ary-chal", "name": "-ary: Challenge",
+          "words": [
+            {"word":"primary","sound":"ary"},{"word":"estuary","sound":"ary"},{"word":"contrary","sound":"ary"},
+            {"word":"library","sound":"ary"},{"word":"missionary","sound":"ary"},{"word":"secondary","sound":"ary"},
+            {"word":"inflationary","sound":"ary"}
+          ]
+        },
+        {
+          "id": "l7-ible-core", "name": "-ible: Core",
+          "words": [
+            {"word":"audible","sound":"ible"},{"word":"destructible","sound":"ible"},{"word":"legible","sound":"ible"},
+            {"word":"impossible","sound":"ible"},{"word":"sensible","sound":"ible"},{"word":"responsible","sound":"ible"},
+            {"word":"visible","sound":"ible"}
+          ]
+        },
+        {
+          "id": "l7-ible-ext", "name": "-ible: Extension",
+          "words": [
+            {"word":"accessible","sound":"ible"},{"word":"edible","sound":"ible"},{"word":"susceptible","sound":"ible"},
+            {"word":"possible","sound":"ible"},{"word":"invincible","sound":"ible"},{"word":"compatible","sound":"ible"},
+            {"word":"credible","sound":"ible"}
+          ]
+        },
+        {
+          "id": "l7-ible-chal", "name": "-ible: Challenge",
+          "words": [
+            {"word":"credible","sound":"ible"},{"word":"flexible","sound":"ible"},{"word":"horrible","sound":"ible"},
+            {"word":"indestructible","sound":"ible"},{"word":"terrible","sound":"ible"},{"word":"reversible","sound":"ible"}
+          ]
+        },
+        {
+          "id": "l7-able-core", "name": "-able: Core",
+          "words": [
+            {"word":"adorable","sound":"able"},{"word":"agreeable","sound":"able"},{"word":"adaptable","sound":"able"},
+            {"word":"accomplishable","sound":"able"},{"word":"comparable","sound":"able"},{"word":"disposable","sound":"able"},
+            {"word":"reliable","sound":"able"},{"word":"manageable","sound":"able"},{"word":"enviable","sound":"able"},
+            {"word":"inexcusable","sound":"able"},{"word":"noticeable","sound":"able"},{"word":"decipherable","sound":"able"}
+          ]
+        },
+        {
+          "id": "l7-able-ext", "name": "-able: Extension",
+          "words": [
+            {"word":"advisable","sound":"able"},{"word":"portable","sound":"able"},{"word":"breakable","sound":"able"},
+            {"word":"chewable","sound":"able"},{"word":"comfortable","sound":"able"},{"word":"ignorable","sound":"able"},
+            {"word":"enjoyable","sound":"able"},{"word":"valuable","sound":"able"},{"word":"identifiable","sound":"able"},
+            {"word":"miserable","sound":"able"},{"word":"replaceable","sound":"able"},{"word":"extinguishable","sound":"able"}
+          ]
+        },
+        {
+          "id": "l7-able-chal", "name": "-able: Challenge",
+          "words": [
+            {"word":"capable","sound":"able"},{"word":"avoidable","sound":"able"},{"word":"accountable","sound":"able"},
+            {"word":"changeable","sound":"able"},{"word":"enable","sound":"able"},{"word":"employable","sound":"able"},
+            {"word":"sociable","sound":"able"},{"word":"fashionable","sound":"able"},{"word":"vegetable","sound":"able"},
+            {"word":"remarkable","sound":"able"},{"word":"respectable","sound":"able"}
+          ]
+        },
+        {
+          "id": "l7-ic-core", "name": "-ic: Core",
+          "words": [
+            {"word":"atomic","sound":"ic"},{"word":"athletic","sound":"ic"},{"word":"organic","sound":"ic"},
+            {"word":"epidemic","sound":"ic"},{"word":"cynic","sound":"ic"},{"word":"horrific","sound":"ic"},
+            {"word":"panic","sound":"ic"},{"word":"volcanic","sound":"ic"}
+          ]
+        },
+        {
+          "id": "l7-ic-ext", "name": "-ic: Extension",
+          "words": [
+            {"word":"angelic","sound":"ic"},{"word":"poetic","sound":"ic"},{"word":"energetic","sound":"ic"},
+            {"word":"arctic","sound":"ic"},{"word":"historic","sound":"ic"},{"word":"dynamic","sound":"ic"},
+            {"word":"specific","sound":"ic"},{"word":"specific","sound":"ic"}
+          ]
+        },
+        {
+          "id": "l7-ic-chal", "name": "-ic: Challenge",
+          "words": [
+            {"word":"heroic","sound":"ic"},{"word":"electric","sound":"ic"},{"word":"aerobic","sound":"ic"},
+            {"word":"gigantic","sound":"ic"},{"word":"electric","sound":"ic"},{"word":"metallic","sound":"ic"},
+            {"word":"periodic","sound":"ic"},{"word":"shambolic","sound":"ic"}
+          ]
+        },
+        {
+          "id": "l7-ly-core", "name": "-ly: Core",
+          "words": [
+            {"word":"quickly","sound":"ly"},{"word":"friendly","sound":"ly"},{"word":"acutely","sound":"ly"},
+            {"word":"insignificantly","sound":"ly"},{"word":"bossily","sound":"ly"},{"word":"sufficiently","sound":"ly"},
+            {"word":"early","sound":"ly"},{"word":"definitely","sound":"ly"},{"word":"horribly","sound":"ly"},
+            {"word":"inaccurately","sound":"ly"},{"word":"insincerely","sound":"ly"},{"word":"strangely","sound":"ly"}
+          ]
+        },
+        {
+          "id": "l7-ly-ext", "name": "-ly: Extension",
+          "words": [
+            {"word":"anxiously","sound":"ly"},{"word":"accidently","sound":"ly"},{"word":"indecently","sound":"ly"},
+            {"word":"boldly","sound":"ly"},{"word":"quietly","sound":"ly"},{"word":"cowardly","sound":"ly"},
+            {"word":"accurately","sound":"ly"},{"word":"gleefully","sound":"ly"},{"word":"immediately","sound":"ly"},
+            {"word":"inconsiderately","sound":"ly"},{"word":"secretively","sound":"ly"}
+          ]
+        },
+        {
+          "id": "l7-ly-chal", "name": "-ly: Challenge",
+          "words": [
+            {"word":"abruptly","sound":"ly"},{"word":"incorrectly","sound":"ly"},{"word":"blurrily","sound":"ly"},
+            {"word":"patiently","sound":"ly"},{"word":"cheerily","sound":"ly"},{"word":"suspiciously","sound":"ly"},
+            {"word":"easily","sound":"ly"},{"word":"entirely","sound":"ly"},{"word":"lovely","sound":"ly"},
+            {"word":"insensitively","sound":"ly"},{"word":"separately","sound":"ly"}
+          ]
+        },
+        {
+          "id": "l7-al-core", "name": "-al: Core",
+          "words": [
+            {"word":"comical","sound":"al"},{"word":"critical","sound":"al"},{"word":"logical","sound":"al"},
+            {"word":"individual","sound":"al"},{"word":"musical","sound":"al"},{"word":"original","sound":"al"},
+            {"word":"personal","sound":"al"},{"word":"sensational","sound":"al"}
+          ]
+        },
+        {
+          "id": "l7-al-ext", "name": "-al: Extension",
+          "words": [
+            {"word":"accidental","sound":"al"},{"word":"fatal","sound":"al"},{"word":"exceptional","sound":"al"},
+            {"word":"medical","sound":"al"},{"word":"occasional","sound":"al"},{"word":"normal","sound":"al"},
+            {"word":"practical","sound":"al"},{"word":"natural","sound":"al"}
+          ]
+        },
+        {
+          "id": "l7-al-chal", "name": "-al: Challenge",
+          "words": [
+            {"word":"final","sound":"al"},{"word":"electrical","sound":"al"},{"word":"magical","sound":"al"},
+            {"word":"traditional","sound":"al"},{"word":"national","sound":"al"},{"word":"ornamental","sound":"al"},
+            {"word":"regional","sound":"al"},{"word":"several","sound":"al"}
+          ]
+        },
+        {
+          "id": "l7-ally-core", "name": "-ally: Core",
+          "words": [
+            {"word":"actually","sound":"ally"},{"word":"automatically","sound":"ally"},{"word":"equally","sound":"ally"},
+            {"word":"mechanically","sound":"ally"},{"word":"logically","sound":"ally"},{"word":"practically","sound":"ally"},
+            {"word":"mentally","sound":"ally"},{"word":"normally","sound":"ally"}
+          ]
+        },
+        {
+          "id": "l7-ally-ext", "name": "-ally: Extension",
+          "words": [
+            {"word":"accidentally","sound":"ally"},{"word":"brutally","sound":"ally"},{"word":"exceptionally","sound":"ally"},
+            {"word":"finally","sound":"ally"},{"word":"physically","sound":"ally"},{"word":"medically","sound":"ally"},
+            {"word":"musically","sound":"ally"},{"word":"originally","sound":"ally"}
+          ]
+        },
+        {
+          "id": "l7-ally-chal", "name": "-ally: Challenge",
+          "words": [
+            {"word":"annually","sound":"ally"},{"word":"critically","sound":"ally"},{"word":"fatally","sound":"ally"},
+            {"word":"occasionally","sound":"ally"},{"word":"magically","sound":"ally"},{"word":"traditionally","sound":"ally"},
+            {"word":"naturally","sound":"ally"},{"word":"personally","sound":"ally"}
+          ]
+        },
+        {
+          "id": "l7-ful-core", "name": "-ful: Core",
+          "words": [
+            {"word":"truthful","sound":"ful"},{"word":"delightful","sound":"ful"},{"word":"barrelful","sound":"ful"},
+            {"word":"resentful","sound":"ful"},{"word":"eventful","sound":"ful"},{"word":"thoughtful","sound":"ful"}
+          ]
+        },
+        {
+          "id": "l7-ful-ext", "name": "-ful: Extension",
+          "words": [
+            {"word":"beautiful","sound":"ful"},{"word":"doubtful","sound":"ful"},{"word":"plentiful","sound":"ful"},
+            {"word":"disdainful","sound":"ful"},{"word":"sorrowful","sound":"ful"},{"word":"dessertspoonful","sound":"ful"}
+          ]
+        },
+        {
+          "id": "l7-ful-chal", "name": "-ful: Challenge",
+          "words": [
+            {"word":"wonderful","sound":"ful"},{"word":"pitiful","sound":"ful"},{"word":"bashful","sound":"ful"},
+            {"word":"respectful","sound":"ful"},{"word":"successful","sound":"ful"}
+          ]
+        },
+        {
+          "id": "l7-less-iness-core", "name": "-less/ -iness: Core",
+          "words": [
+            {"word":"colourless"},{"word":"affectionless"},{"word":"heaviness"},
+            {"word":"expressionless"},{"word":"nastiness"},{"word":"bloodthirstiness"},
+            {"word":"blameless"},{"word":"fearless"},{"word":"cowardliness"}
+          ]
+        },
+        {
+          "id": "l7-less-iness-ext", "name": "-less/ -iness: Extension",
+          "words": [
+            {"word":"thoughtless"},{"word":"happiness"},{"word":"compassionless"},
+            {"word":"loneliness"},{"word":"complementariness"},{"word":"tidiness"},
+            {"word":"bottomless"},{"word":"nevertheless"},{"word":"loveliness"}
+          ]
+        },
+        {
+          "id": "l7-less-iness-chal", "name": "-less/ -iness: Challenge",
+          "words": [
+            {"word":"emptiness"},{"word":"breathless"},{"word":"laziness"},
+            {"word":"airworthiness"},{"word":"silliness"},{"word":"chumminess"},
+            {"word":"clueless"},{"word":"blurriness"}
+          ]
+        },
+        {
+          "id": "l7-fully-core", "name": "-fully: Core",
+          "words": [
+            {"word":"usefully","sound":"fully"},{"word":"beautifully","sound":"fully"},{"word":"forgetfully","sound":"fully"},
+            {"word":"successfully","sound":"fully"},{"word":"painfully","sound":"fully"},{"word":"unsuccessfully","sound":"fully"},
+            {"word":"thankfully","sound":"fully"},{"word":"purposefully","sound":"fully"},{"word":"wonderfully","sound":"fully"},
+            {"word":"mournfully","sound":"fully"}
+          ]
+        },
+        {
+          "id": "l7-fully-ext", "name": "-fully: Extension",
+          "words": [
+            {"word":"unmercifully","sound":"fully"},{"word":"cheerfully","sound":"fully"},{"word":"spitefully","sound":"fully"},
+            {"word":"hopefully","sound":"fully"},{"word":"delightfully","sound":"fully"},{"word":"skillfully","sound":"fully"},
+            {"word":"disrespectfully","sound":"fully"},{"word":"usefully","sound":"fully"},{"word":"insightfully","sound":"fully"},
+            {"word":"neglectfully","sound":"fully"}
+          ]
+        },
+        {
+          "id": "l7-fully-chal", "name": "-fully: Challenge",
+          "words": [
+            {"word":"carefully","sound":"fully"},{"word":"respectfully","sound":"fully"},{"word":"gratefully","sound":"fully"},
+            {"word":"thoughtfully","sound":"fully"},{"word":"powerfully","sound":"fully"},{"word":"disdainfully","sound":"fully"},
+            {"word":"truthfully","sound":"fully"},{"word":"resourcefully","sound":"fully"},{"word":"faithfully","sound":"fully"}
+          ]
+        },
+        {
+          "id": "l7-ship-core", "name": "-ship: Core",
+          "words": [
+            {"word":"championship","sound":"ship"},{"word":"dictatorship","sound":"ship"},{"word":"membership","sound":"ship"},
+            {"word":"brinksmanship","sound":"ship"},{"word":"courtship","sound":"ship"},{"word":"worship","sound":"ship"}
+          ]
+        },
+        {
+          "id": "l7-ship-ext", "name": "-ship: Extension",
+          "words": [
+            {"word":"apprenticeship","sound":"ship"},{"word":"fellowship","sound":"ship"},{"word":"associateship","sound":"ship"},
+            {"word":"partnership","sound":"ship"},{"word":"dealership","sound":"ship"}
+          ]
+        },
+        {
+          "id": "l7-ship-chal", "name": "-ship: Challenge",
+          "words": [
+            {"word":"craftsmanship","sound":"ship"},{"word":"ambassadorship","sound":"ship"},{"word":"ownership","sound":"ship"},
+            {"word":"relationship","sound":"ship"},{"word":"sponsorship","sound":"ship"}
+          ]
+        },
+        {
+          "id": "l7-hood-core", "name": "-hood: Core",
+          "words": [
+            {"word":"boyhood","sound":"hood"},{"word":"bachelorhood","sound":"hood"},{"word":"fatherhood","sound":"hood"},
+            {"word":"prophethood","sound":"hood"},{"word":"adulthood","sound":"hood"}
+          ]
+        },
+        {
+          "id": "l7-hood-ext", "name": "-hood: Extension",
+          "words": [
+            {"word":"neighbourhood","sound":"hood"},{"word":"childhood","sound":"hood"},{"word":"livelihood","sound":"hood"},
+            {"word":"motherhood","sound":"hood"}
+          ]
+        },
+        {
+          "id": "l7-hood-chal", "name": "-hood: Challenge",
+          "words": [
+            {"word":"brotherhood","sound":"hood"},{"word":"maidenhood","sound":"hood"},{"word":"knighthood","sound":"hood"},
+            {"word":"unlikelihood","sound":"hood"}
+          ]
+        },
+        {
+          "id": "l7-ment-core", "name": "-ment: Core",
+          "words": [
+            {"word":"document","sound":"ment"},{"word":"advertisement","sound":"ment"},{"word":"movement","sound":"ment"},
+            {"word":"excitement","sound":"ment"},{"word":"amusement","sound":"ment"},{"word":"commitment","sound":"ment"},
+            {"word":"settlement","sound":"ment"},{"word":"establishment","sound":"ment"}
+          ]
+        },
+        {
+          "id": "l7-ment-ext", "name": "-ment: Extension",
+          "words": [
+            {"word":"environment","sound":"ment"},{"word":"enjoyment","sound":"ment"},{"word":"encouragement","sound":"ment"},
+            {"word":"government","sound":"ment"},{"word":"equipment","sound":"ment"},{"word":"replacement","sound":"ment"},
+            {"word":"appointment","sound":"ment"},{"word":"entertainment","sound":"ment"}
+          ]
+        },
+        {
+          "id": "l7-ment-chal", "name": "-ment: Challenge",
+          "words": [
+            {"word":"employment","sound":"ment"},{"word":"arrangement","sound":"ment"},{"word":"statement","sound":"ment"},
+            {"word":"parliament","sound":"ment"},{"word":"management","sound":"ment"},{"word":"requirement","sound":"ment"},
+            {"word":"improvement","sound":"ment"}
+          ]
+        },
+        {
+          "id": "l7-plurals-s-core", "name": "Plurals s: Core",
+          "words": [
+            {"word":"accidents"},{"word":"antibiotics"},{"word":"magicians"},
+            {"word":"non-comformists"},{"word":"patients"}
+          ]
+        },
+        {
+          "id": "l7-plurals-s-ext", "name": "Plurals s: Extension",
+          "words": [
+            {"word":"amusements"},{"word":"immortals"},{"word":"excursions"},
+            {"word":"opticians"},{"word":"politicians"}
+          ]
+        },
+        {
+          "id": "l7-plurals-s-chal", "name": "Plurals s: Challenge",
+          "words": [
+            {"word":"championships"},{"word":"apprenticeships"},{"word":"musicians"},
+            {"word":"inaccuracies"},{"word":"successes"}
+          ]
+        },
+        {
+          "id": "l7-ing-core", "name": "-ing: Core",
+          "words": [
+            {"word":"excelling","sound":"ing"},{"word":"disembarking","sound":"ing"},{"word":"arranging","sound":"ing"},
+            {"word":"manufacturing","sound":"ing"},{"word":"exciting","sound":"ing"},{"word":"noticing","sound":"ing"},
+            {"word":"separating","sound":"ing"}
+          ]
+        },
+        {
+          "id": "l7-ing-ext", "name": "-ing: Extension",
+          "words": [
+            {"word":"accelerating","sound":"ing"},{"word":"unearthing","sound":"ing"},{"word":"evaporating","sound":"ing"},
+            {"word":"escaping","sound":"ing"},{"word":"persuading","sound":"ing"},{"word":"rehearsing","sound":"ing"},
+            {"word":"surprising","sound":"ing"}
+          ]
+        },
+        {
+          "id": "l7-ing-chal", "name": "-ing: Challenge",
+          "words": [
+            {"word":"exclaiming","sound":"ing"},{"word":"concentrating","sound":"ing"},{"word":"damaging","sound":"ing"},
+            {"word":"exercising","sound":"ing"},{"word":"including","sound":"ing"},{"word":"requiring","sound":"ing"}
+          ]
+        },
+        {
+          "id": "l7-ed-core", "name": "-ed: Core",
+          "words": [
+            {"word":"accepted","sound":"ed"},{"word":"misinterpreted","sound":"ed"},{"word":"excelled","sound":"ed"},
+            {"word":"manufactured","sound":"ed"},{"word":"misinformed","sound":"ed"},{"word":"disqualified","sound":"ed"},
+            {"word":"exploded","sound":"ed"}
+          ]
+        },
+        {
+          "id": "l7-ed-ext", "name": "-ed: Extension",
+          "words": [
+            {"word":"disappeared","sound":"ed"},{"word":"disappointed","sound":"ed"},{"word":"discontinued","sound":"ed"},
+            {"word":"inverted","sound":"ed"},{"word":"dissatisfied","sound":"ed"},{"word":"calculated","sound":"ed"},
+            {"word":"inquired","sound":"ed"}
+          ]
+        },
+        {
+          "id": "l7-ed-chal", "name": "-ed: Challenge",
+          "words": [
+            {"word":"answered","sound":"ed"},{"word":"disadvantaged","sound":"ed"},{"word":"exclaimed","sound":"ed"},
+            {"word":"mismanaged","sound":"ed"},{"word":"shrieked","sound":"ed"},{"word":"escaped","sound":"ed"},
+            {"word":"invaded","sound":"ed"}
+          ]
+        },
+        {
+          "id": "l7-lling-lled-core", "name": "-lling/ -lled: Core",
+          "words": [
+            {"word":"controlling"},{"word":"shovelling"},{"word":"levelling"},
+            {"word":"appalling"},{"word":"totalling"},{"word":"marvelled"},
+            {"word":"patrolled"},{"word":"totalled"}
+          ]
+        },
+        {
+          "id": "l7-lling-lled-ext", "name": "-lling/ -lled: Extension",
+          "words": [
+            {"word":"quarrelling"},{"word":"labelling"},{"word":"quarrelled"},
+            {"word":"rebelling"},{"word":"tunnelling"},{"word":"cancelled"},
+            {"word":"rebelled"},{"word":"travelled"}
+          ]
+        },
+        {
+          "id": "l7-lling-lled-chal", "name": "-lling/ -lled: Challenge",
+          "words": [
+            {"word":"excelling"},{"word":"signalling"},{"word":"patrolling"},
+            {"word":"cancelling"},{"word":"travelling"},{"word":"labelled"},
+            {"word":"signalled"}
+          ]
+        }
+      ]
     }
   ]
 }
+

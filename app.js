@@ -47,6 +47,7 @@ const SET_META = {
 };
 
 const LETTERS = 'abcdefghijklmnopqrstuvwxyz'.split('');
+const QWERTY_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'].map(r => r.split(''));
 const DEFAULT_PIN = '1234';
 
 // ARASAAC — educational symbol library (CC BY-NC-SA 4.0, arasaac.org)
@@ -77,13 +78,20 @@ const EMOJI = {
 let activities = [];
 let actIdx     = 0;
 let setId      = null;   // null = play all
+let mixSetIds  = null;   // non-null = custom mix over these set ids (within one activity)
+let mixLimit   = null;   // max words in a mix round (null = no cap)
+let globalMix  = null;   // non-null = home mix: { actIds: [...], limit }
+let mixMode    = 'activity'; // which builder the mix overlay is currently showing
 let wordIdx    = 0;
 let order      = [];
 let answer     = [];
 let checked    = false;
+let roundWords = [];   // words in the current round (full set, or just the missed ones)
+let missed     = [];   // words spelled incorrectly this round
 
 let selectedVoice   = null;
 let speechRate      = 0.75;
+let currentAudio    = null;   // currently-playing pre-recorded word clip
 let lastCheckResult = false;
 let answerCtx       = null;
 let answerDrawing   = false;
@@ -164,6 +172,20 @@ function renderHome() {
       </div>`;
     grid.appendChild(card);
   });
+
+  // Home mix - a cross-activity challenge, unlocked by the teacher.
+  if (getSetting('feature_homemix', false)) {
+    const mix = document.createElement('div');
+    mix.className = 'act-card home-mix-card';
+    mix.dataset.homeMix = '1';
+    mix.innerHTML = `
+      <div class="act-card-hero" style="background:#5856D620"><span>🎲</span></div>
+      <div class="act-card-body">
+        <h3>Mix</h3>
+        <p>A bit of everything</p>
+      </div>`;
+    grid.appendChild(mix);
+  }
 }
 
 // ── Set picker ────────────────────────────────────────────
@@ -192,6 +214,19 @@ function renderPick(idx) {
         <p>${totalWords} words</p>
       </div>`;
     grid.appendChild(allCard);
+
+    const mixCard = document.createElement('div');
+    mixCard.className = 'set-card mix-card';
+    mixCard.dataset.setId = '__mix__';
+    mixCard.innerHTML = `
+      <div class="set-card-hero" style="background:${(actMeta.color || '#888')}20">
+        <span>🎲</span>
+      </div>
+      <div class="set-card-body">
+        <h3>Mix…</h3>
+        <p>Choose sets &amp; length</p>
+      </div>`;
+    grid.appendChild(mixCard);
   }
 
   visibleSets.forEach(s => {
@@ -214,22 +249,121 @@ function renderPick(idx) {
   });
 }
 
+// ── Mix builder ───────────────────────────────────────────
+const MIX_LIMITS = [10, 20, 30, 50, 0]; // 0 = All
+
+function renderMixRows(rows) {
+  document.getElementById('mix-sets').innerHTML = rows.map(r => `
+    <label class="mix-set-row">
+      <input type="checkbox" value="${r.id}" checked>
+      <span class="mix-set-name">${r.name}</span>
+      <span class="mix-set-count">${r.count}</span>
+    </label>`).join('');
+  document.getElementById('mix-limits').innerHTML = MIX_LIMITS.map((n, i) => `
+    <button type="button" class="mix-chip${i === 1 ? ' active' : ''}" data-limit="${n}">
+      ${n === 0 ? 'All' : n}
+    </button>`).join('');
+  document.getElementById('mix-overlay').hidden = false;
+}
+
+// Per-activity mix: choose which sets within the current activity.
+function openMix() {
+  mixMode = 'activity';
+  const act = activities[actIdx];
+  const en  = getEnabledSets(act.id);
+  document.getElementById('mix-include-label').textContent = 'Sets to include';
+  renderMixRows((act.sets || []).filter(s => en.has(s.id))
+    .map(s => ({ id: s.id, name: s.name, count: s.words.length })));
+}
+
+// Home mix: choose which whole activities to draw from.
+function openGlobalMix() {
+  mixMode = 'global';
+  const enabled = getEnabledIds();
+  document.getElementById('mix-include-label').textContent = 'Activities to include';
+  renderMixRows(activities.filter(a => enabled.has(a.id))
+    .map(a => ({ id: a.id, name: a.name, count: activityWords(a).length })));
+}
+
+function beginMixFromOverlay() {
+  const ids = [...document.querySelectorAll('#mix-sets input:checked')].map(i => i.value);
+  if (!ids.length) return; // nothing selected
+  const chip = document.querySelector('#mix-limits .mix-chip.active');
+  const limit = chip ? +chip.dataset.limit : 0;
+  document.getElementById('mix-overlay').hidden = true;
+  if (mixMode === 'global') startGlobalMix(ids, limit);
+  else startMix(actIdx, ids, limit);
+}
+
 // ── Start spelling ────────────────────────────────────────
 function startSpelling(aIdx, sId) {
-  actIdx  = aIdx;
-  setId   = (sId === '__all__') ? null : sId;
-  wordIdx = 0;
-  order   = shuffle(getWords().map((_, i) => i));
-  answer  = [];
-  checked = false;
+  actIdx    = aIdx;
+  mixSetIds = null;
+  globalMix = null;
+  setId     = (sId === '__all__') ? null : sId;
+  startRound(getWords());
   showScreen('spell');
   renderBank();
   renderWord();
 }
 
+// Start a custom mix over the chosen set ids, capped at `limit` words (0 = all).
+function startMix(aIdx, setIds, limit) {
+  actIdx    = aIdx;
+  setId     = null;
+  globalMix = null;
+  mixSetIds = setIds;
+  mixLimit  = limit || null;
+  startRound(getWords());
+  showScreen('spell');
+  renderBank();
+  renderWord();
+}
+
+// Start a home mix that spans whole activities, capped at `limit` words (0 = all).
+function startGlobalMix(actIds, limit) {
+  mixSetIds = null;
+  globalMix = { actIds, limit: limit || null };
+  startRound(getWords());
+  showScreen('spell');
+  renderBank();
+  renderWord();
+}
+
+// Begin a round over the given list of words (the full set, or a practice list).
+function startRound(words) {
+  roundWords = words.slice();
+  missed     = [];
+  wordIdx    = 0;
+  order      = shuffle(roundWords.map((_, i) => i));
+  answer     = [];
+  checked    = false;
+}
+
 // ── Word helpers ──────────────────────────────────────────
+// Pool the enabled words of one activity (direct words, or its enabled sets).
+function activityWords(a) {
+  if (!a.sets) return a.words || [];
+  const en = getEnabledSets(a.id);
+  return a.sets.filter(s => en.has(s.id)).flatMap(s => s.words);
+}
+
 function getWords() {
+  if (globalMix) {
+    const ids = new Set(globalMix.actIds);
+    let pool = activities.filter(a => ids.has(a.id)).flatMap(activityWords);
+    pool = shuffle(pool);
+    if (globalMix.limit && globalMix.limit < pool.length) pool = pool.slice(0, globalMix.limit);
+    return pool;
+  }
   const act = activities[actIdx];
+  if (mixSetIds) {
+    const ids = new Set(mixSetIds);
+    let pool = (act.sets || []).filter(s => ids.has(s.id)).flatMap(s => s.words);
+    pool = shuffle(pool);
+    if (mixLimit && mixLimit < pool.length) pool = pool.slice(0, mixLimit);
+    return pool;
+  }
   if (!act.sets) return act.words || [];
   if (setId === null) {
     const en = getEnabledSets(act.id);
@@ -237,12 +371,12 @@ function getWords() {
   }
   return act.sets.find(s => s.id === setId)?.words || [];
 }
-function currentWord() { return getWords()[order[wordIdx]]; }
+function currentWord() { return roundWords[order[wordIdx]]; }
 
 // ── Render word ───────────────────────────────────────────
 function renderWord() {
   const w   = currentWord();
-  const words = getWords();
+  const words = roundWords;
   answer  = [];
   checked = false;
 
@@ -263,8 +397,17 @@ function renderWord() {
 }
 
 function renderBank() {
-  document.getElementById('bank').innerHTML =
-    LETTERS.map(l => `<button class="tile" data-letter="${l}">${l}</button>`).join('');
+  const bank = document.getElementById('bank');
+  const tile = l => `<button class="tile" data-letter="${l}">${l}</button>`;
+  if (getSetting('feature_qwerty', false)) {
+    bank.classList.add('qwerty');
+    bank.innerHTML = QWERTY_ROWS
+      .map(row => `<div class="bank-row">${row.map(tile).join('')}</div>`)
+      .join('');
+  } else {
+    bank.classList.remove('qwerty');
+    bank.innerHTML = LETTERS.map(tile).join('');
+  }
 }
 
 function renderAnswer() {
@@ -403,6 +546,7 @@ function checkAnswer() {
     fb.textContent = `✗  The word is: ${w.word}`;
     renderAnswer();
     tiles.classList.add('celebrating');
+    if (!missed.includes(w)) missed.push(w);
   }
   renderAnswer();
   document.getElementById('next-btn').hidden = false;
@@ -411,11 +555,153 @@ function checkAnswer() {
 
 function nextWord() {
   wordIdx++;
-  if (wordIdx >= getWords().length) {
-    wordIdx = 0;
-    order   = shuffle(getWords().map((_, i) => i));
+  if (wordIdx >= roundWords.length) {
+    showResults();
+    return;
   }
   renderWord();
+}
+
+// Leave the spell screen, returning to the set picker (if the activity has
+// more than one enabled set) or home.
+function exitSpelling() {
+  const act = activities[actIdx];
+  if (globalMix) { globalMix = null; renderHome(); showScreen('home'); return; }
+  if (mixSetIds) { mixSetIds = null; renderPick(actIdx); showScreen('pick'); return; }
+  if (act.sets) {
+    const en = getEnabledSets(act.id);
+    if (act.sets.filter(s => en.has(s.id)).length <= 1) {
+      showScreen('home');
+    } else {
+      renderPick(actIdx);
+      showScreen('pick');
+    }
+  } else {
+    showScreen('home');
+  }
+}
+
+// ── Round results ─────────────────────────────────────────
+function showResults() {
+  const total   = roundWords.length;
+  const wrong   = missed.length;
+  const correct = total - wrong;
+  const allRight = wrong === 0;
+
+  document.getElementById('results-emoji').textContent = allRight ? '🌟' : '👍';
+  document.getElementById('results-title').textContent =
+    allRight ? 'All correct!' : 'Well done!';
+  document.getElementById('results-score').textContent =
+    `You spelled ${correct} of ${total}.`;
+
+  const missedWrap = document.getElementById('results-missed');
+  if (allRight) {
+    missedWrap.hidden = true;
+  } else {
+    missedWrap.hidden = false;
+    document.getElementById('results-missed-words').innerHTML =
+      missed.map(w => `<span class="missed-chip">${w.word}</span>`).join('');
+  }
+
+  document.getElementById('results-practice').hidden = allRight;
+  document.getElementById('results-again').hidden    = !allRight;
+
+  document.getElementById('results-overlay').hidden = false;
+  if (allRight) { launchConfetti(); playCelebrationSound(); }
+}
+
+function hideResults() {
+  document.getElementById('results-overlay').hidden = true;
+  stopConfetti();
+}
+
+function practiceMissed() {
+  const words = missed.slice();
+  hideResults();
+  startRound(words);
+  renderWord();
+}
+
+function playAgain() {
+  hideResults();
+  startRound(getWords());
+  renderWord();
+}
+
+// ── Celebration sound ─────────────────────────────────────
+let audioCtx = null;
+function playCelebrationSound() {
+  if (!getSetting('feature_sound', true)) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    // A bright rising arpeggio: C5 E5 G5 C6.
+    const notes = [523.25, 659.25, 783.99, 1046.50];
+    const now = audioCtx.currentTime;
+    notes.forEach((freq, i) => {
+      const t = now + i * 0.12;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.22, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + 0.5);
+    });
+  } catch {}
+}
+
+// ── Confetti ──────────────────────────────────────────────
+let confettiRAF = null;
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.clientWidth, H = canvas.clientHeight;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const colours = ['#007AFF','#34C759','#FF9F0A','#AF52DE','#FF2D55','#32ADE6'];
+  const parts = Array.from({ length: 140 }, () => ({
+    x: Math.random() * W,
+    y: -20 - Math.random() * H * 0.4,
+    r: 5 + Math.random() * 6,
+    vx: -1.5 + Math.random() * 3,
+    vy: 2 + Math.random() * 3.5,
+    rot: Math.random() * Math.PI,
+    vr: -0.2 + Math.random() * 0.4,
+    c: colours[(Math.random() * colours.length) | 0],
+  }));
+
+  const start = performance.now();
+  function frame(now) {
+    ctx.clearRect(0, 0, W, H);
+    parts.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.vr;
+      ctx.save();
+      ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.c;
+      ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6);
+      ctx.restore();
+    });
+    if (now - start < 3500) {
+      confettiRAF = requestAnimationFrame(frame);
+    } else {
+      ctx.clearRect(0, 0, W, H);
+      confettiRAF = null;
+    }
+  }
+  stopConfetti();
+  confettiRAF = requestAnimationFrame(frame);
+}
+function stopConfetti() {
+  if (confettiRAF) { cancelAnimationFrame(confettiRAF); confettiRAF = null; }
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 // ── Speech ────────────────────────────────────────────────
@@ -443,15 +729,59 @@ function initVoices() {
   if (!isNaN(saved)) speechRate = saved;
 }
 
-function speakCurrent() { speak(currentWord().word); }
+function audioSlug(word) {
+  return word.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
 
-function speak(text) {
+function stopSpeech() {
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+}
+
+function speakCurrent() {
+  speak(currentWord().word, getSetting('feature_saytwice', true));
+}
+
+// Play the pre-recorded clip for a word (rendered by build_audio.py - no
+// clipping). Falls back to live speech for sentences or any word without a clip.
+function speak(text, repeat = false) {
+  const word = text.trim();
+  stopSpeech();
+  if (/\s/.test(word)) { speakLive(text, repeat); return; }
+
+  const audio = new Audio(`audio/${audioSlug(word)}.m4a`);
+  currentAudio = audio;
+  let plays = 1;
+  audio.addEventListener('ended', () => {
+    if (currentAudio === audio && repeat && plays < 2) {
+      plays++; audio.currentTime = 0; audio.play().catch(() => {});
+    }
+  });
+  audio.addEventListener('error', () => {
+    if (currentAudio === audio) { currentAudio = null; speakLive(text, repeat); }
+  });
+  audio.play().catch(() => {});
+}
+
+// Live browser speech - the fallback. Web Speech clips the first and last sounds
+// of an utterance, so we lead with a comma (run-up) and speak one extra throwaway
+// copy that absorbs the end-clip while every intended copy stays mid-utterance.
+function speakLive(text, repeat = false) {
   if (!('speechSynthesis' in window)) return;
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang  = 'en-GB'; u.rate = speechRate; u.pitch = 1.0;
+  const synth = window.speechSynthesis;
+  const word = text.trim();
+  let phrase;
+  if (/\s/.test(word)) {
+    phrase = ', ' + word;
+  } else {
+    const cleanCount = repeat ? 2 : 1;
+    phrase = ', ' + Array(cleanCount + 1).fill(word).join(', ') + '.';
+  }
+  const u = new SpeechSynthesisUtterance(phrase);
+  u.lang = 'en-GB'; u.rate = speechRate; u.pitch = 1.0;
   if (selectedVoice) u.voice = selectedVoice;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(u);
+  synth.cancel();
+  setTimeout(() => synth.speak(u), 90);
 }
 
 // ── Answer-line canvas ────────────────────────────────────
@@ -593,6 +923,50 @@ function renderTeacher() {
             <div class="ios-toggle-thumb"></div>
           </label>
         </div>
+        <div class="t-row">
+          <div>
+            <div class="t-row-label">QWERTY Keyboard</div>
+            <div class="t-row-desc">Tiles in keyboard order instead of A-Z</div>
+          </div>
+          <label class="ios-toggle">
+            <input type="checkbox" id="toggle-qwerty" ${getSetting('feature_qwerty', false) ? 'checked' : ''}>
+            <div class="ios-toggle-track"></div>
+            <div class="ios-toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="t-row">
+          <div>
+            <div class="t-row-label">Celebration Sound</div>
+            <div class="t-row-desc">Play a chime when a round is all correct</div>
+          </div>
+          <label class="ios-toggle">
+            <input type="checkbox" id="toggle-sound" ${getSetting('feature_sound', true) ? 'checked' : ''}>
+            <div class="ios-toggle-track"></div>
+            <div class="ios-toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="t-row">
+          <div>
+            <div class="t-row-label">Say Each Word Twice</div>
+            <div class="t-row-desc">Reads the word, pauses, then repeats it</div>
+          </div>
+          <label class="ios-toggle">
+            <input type="checkbox" id="toggle-saytwice" ${getSetting('feature_saytwice', true) ? 'checked' : ''}>
+            <div class="ios-toggle-track"></div>
+            <div class="ios-toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="t-row">
+          <div>
+            <div class="t-row-label">Mix on Home Screen</div>
+            <div class="t-row-desc">Unlock a cross-activity mix card for confident learners</div>
+          </div>
+          <label class="ios-toggle">
+            <input type="checkbox" id="toggle-homemix" ${getSetting('feature_homemix', false) ? 'checked' : ''}>
+            <div class="ios-toggle-track"></div>
+            <div class="ios-toggle-thumb"></div>
+          </label>
+        </div>
       </div>
     </div>
     <div>
@@ -677,11 +1051,16 @@ function renderTeacher() {
   document.getElementById('reset-row').addEventListener('click', () => {
     if (confirm('Reset all settings to defaults? This cannot be undone.')) {
       localStorage.removeItem('enabled_activities');
+      localStorage.removeItem('known_activities');
       localStorage.removeItem('teacher_pin');
       localStorage.removeItem('spelling_voice');
       localStorage.removeItem('spelling_rate');
       localStorage.removeItem('feature_elkonin');
       localStorage.removeItem('feature_write');
+      localStorage.removeItem('feature_qwerty');
+      localStorage.removeItem('feature_sound');
+      localStorage.removeItem('feature_saytwice');
+      localStorage.removeItem('feature_homemix');
       activities.filter(a => a.sets).forEach(a => {
         localStorage.removeItem(`enabled_sets_${a.id}`);
       });
@@ -699,6 +1078,19 @@ function renderTeacher() {
   });
   document.getElementById('toggle-write').addEventListener('change', e => {
     localStorage.setItem('feature_write', e.target.checked);
+  });
+  document.getElementById('toggle-qwerty').addEventListener('change', e => {
+    localStorage.setItem('feature_qwerty', e.target.checked);
+  });
+  document.getElementById('toggle-sound').addEventListener('change', e => {
+    localStorage.setItem('feature_sound', e.target.checked);
+  });
+  document.getElementById('toggle-saytwice').addEventListener('change', e => {
+    localStorage.setItem('feature_saytwice', e.target.checked);
+  });
+  document.getElementById('toggle-homemix').addEventListener('change', e => {
+    localStorage.setItem('feature_homemix', e.target.checked);
+    renderHome();
   });
 
   // Activity toggle listeners
@@ -804,15 +1196,26 @@ function getEnabledSets(actId) {
 }
 
 function applyEnabledActivities() {
-  // Ensure saved IDs still exist in the data
-  const all = new Set(activities.map(a => a.id));
+  const all = activities.map(a => a.id);
   const stored = localStorage.getItem('enabled_activities');
-  if (stored) {
-    try {
-      const ids = JSON.parse(stored).filter(id => all.has(id));
-      localStorage.setItem('enabled_activities', JSON.stringify(ids));
-    } catch {}
-  }
+  if (!stored) return; // no saved prefs => everything on by default
+
+  let saved;
+  try { saved = JSON.parse(stored); } catch { return; }
+  const savedSet = new Set(saved);
+
+  // `known_activities` records every activity the teacher has already had a
+  // chance to toggle. Anything in `activities` but not in `known` is brand new
+  // (e.g. a freshly-added CEC level) and should default to ON, while a
+  // deliberately-disabled activity stays off because it IS known.
+  let known;
+  try { known = new Set(JSON.parse(localStorage.getItem('known_activities'))); }
+  catch { known = null; }
+  if (!known) known = new Set(saved); // migrate: treat current enabled as known
+
+  const ids = all.filter(id => savedSet.has(id) || !known.has(id));
+  localStorage.setItem('enabled_activities', JSON.stringify(ids));
+  localStorage.setItem('known_activities', JSON.stringify(all));
 }
 
 // ── Event binding ─────────────────────────────────────────
@@ -821,6 +1224,7 @@ function bindEvents() {
   document.getElementById('activity-grid').addEventListener('click', e => {
     const card = e.target.closest('.act-card');
     if (!card) return;
+    if (card.dataset.homeMix) { openGlobalMix(); return; }
     const idx = +card.dataset.actIdx;
     const act = activities[idx];
     if (act.sets) {
@@ -844,26 +1248,43 @@ function bindEvents() {
   document.getElementById('set-grid').addEventListener('click', e => {
     const card = e.target.closest('.set-card');
     if (!card) return;
+    if (card.dataset.setId === '__mix__') { openMix(); return; }
     startSpelling(actIdx, card.dataset.setId);
+  });
+
+  // Mix overlay
+  document.getElementById('mix-start').addEventListener('click', beginMixFromOverlay);
+  document.getElementById('mix-cancel').addEventListener('click', () => {
+    document.getElementById('mix-overlay').hidden = true;
+  });
+  document.getElementById('mix-overlay').addEventListener('click', e => {
+    if (e.target === e.currentTarget) e.currentTarget.hidden = true;
+  });
+  document.getElementById('mix-all').addEventListener('click', () => {
+    document.querySelectorAll('#mix-sets input').forEach(i => { i.checked = true; });
+  });
+  document.getElementById('mix-none').addEventListener('click', () => {
+    document.querySelectorAll('#mix-sets input').forEach(i => { i.checked = false; });
+  });
+  document.getElementById('mix-limits').addEventListener('click', e => {
+    const chip = e.target.closest('.mix-chip');
+    if (!chip) return;
+    document.querySelectorAll('#mix-limits .mix-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
   });
 
   // Pick: back
   document.getElementById('pick-back').addEventListener('click', () => showScreen('home'));
 
   // Spell: back
-  document.getElementById('spell-back').addEventListener('click', () => {
-    const act = activities[actIdx];
-    if (act.sets) {
-      const en = getEnabledSets(act.id);
-      if (act.sets.filter(s => en.has(s.id)).length <= 1) {
-        showScreen('home');
-      } else {
-        renderPick(actIdx);
-        showScreen('pick');
-      }
-    } else {
-      showScreen('home');
-    }
+  document.getElementById('spell-back').addEventListener('click', exitSpelling);
+
+  // Results overlay
+  document.getElementById('results-practice').addEventListener('click', practiceMissed);
+  document.getElementById('results-again').addEventListener('click', playAgain);
+  document.getElementById('results-finish').addEventListener('click', () => {
+    hideResults();
+    exitSpelling();
   });
 
   // Letter bank

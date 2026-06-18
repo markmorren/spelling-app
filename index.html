@@ -113,6 +113,46 @@
     </div>
   </div>
 
+  <!-- ── Overlay: Mix builder ── -->
+  <div id="mix-overlay" hidden role="dialog" aria-modal="true" aria-label="Mix words">
+    <div id="mix-panel">
+      <h2>Mix Words</h2>
+      <div class="mix-section-label">
+        <span id="mix-include-label">Sets to include</span>
+        <div class="mix-select-actions">
+          <button id="mix-all" type="button">All</button>
+          <button id="mix-none" type="button">None</button>
+        </div>
+      </div>
+      <div id="mix-sets"></div>
+      <div class="mix-section-label"><span>How many words</span></div>
+      <div id="mix-limits"></div>
+      <div class="mix-actions">
+        <button id="mix-cancel" type="button">Cancel</button>
+        <button id="mix-start" type="button">Start →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Overlay: Round results ── -->
+  <div id="results-overlay" hidden role="dialog" aria-modal="true" aria-label="Round complete">
+    <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+    <div id="results-panel">
+      <div id="results-emoji">🎉</div>
+      <h2 id="results-title"></h2>
+      <p id="results-score"></p>
+      <div id="results-missed" hidden>
+        <div class="results-missed-label">Words to practise</div>
+        <div id="results-missed-words"></div>
+      </div>
+      <div class="results-actions">
+        <button id="results-practice" hidden>Practise the tricky words</button>
+        <button id="results-again" hidden>Play again</button>
+        <button id="results-finish">Finish</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── Overlay: Voice settings ── -->
   <div id="settings-overlay" hidden role="dialog" aria-modal="true" aria-label="Voice settings">
     <div id="settings-panel">
