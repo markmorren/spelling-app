@@ -409,11 +409,21 @@ svg    { display: block; }
   gap: 7px;
   align-content: flex-start;
 }
+#write-prompt {
+  height: 28px;
+  line-height: 28px;
+  font-size: 15px;
+  color: #555;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  flex-shrink: 0;
+}
 #answer-line {
   display: block;
   width: 100%;
-  height: 72px;
-  margin-top: 8px;
+  height: 180px;
   flex-shrink: 0;
 }
 

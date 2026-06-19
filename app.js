@@ -903,13 +903,14 @@ function resetAnswerCanvas() {
   c.width = rect.width * dpr; c.height = rect.height * dpr;
   answerCtx = c.getContext('2d');
   answerCtx.scale(dpr, dpr);
-  // Draw blue baseline
+  // Draw blue baseline at 65% from top — room for ascenders above, descenders below
   answerCtx.strokeStyle = '#64b5f6';
-  answerCtx.lineWidth = 2; answerCtx.lineCap = 'square';
-  const baseY = rect.height - 3;
+  answerCtx.lineWidth = 2.5; answerCtx.lineCap = 'square';
+  const baseY = Math.round(rect.height * 0.65);
   answerCtx.beginPath(); answerCtx.moveTo(0, baseY); answerCtx.lineTo(rect.width, baseY); answerCtx.stroke();
   answerWriteOn = false; answerDrawing = false;
   c.style.cursor = 'default';
+  document.getElementById('write-prompt').style.opacity = '0';
 }
 
 function enableAnswerCanvas() {
@@ -918,6 +919,7 @@ function enableAnswerCanvas() {
   answerCtx.strokeStyle = '#1C1C1E';
   answerCtx.lineWidth = 3; answerCtx.lineCap = 'round'; answerCtx.lineJoin = 'round';
   document.getElementById('answer-line').style.cursor = 'crosshair';
+  document.getElementById('write-prompt').style.opacity = '1';
 }
 
 // ── Teacher / PIN ─────────────────────────────────────────
