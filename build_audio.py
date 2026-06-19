@@ -18,7 +18,7 @@ import re
 import subprocess
 import sys
 
-VOICE = "Daniel"  # en_GB; change and delete audio/ to re-voice everything
+VOICE = "Serena (Premium)"  # en_GB; change and delete audio/ to re-voice everything
 RATE  = 150       # words per minute (say default is ~175-200); slower = clearer
 
 
