@@ -100,7 +100,7 @@ svg    { display: block; }
 
 #activity-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 180px));
+  grid-template-columns: repeat(4, minmax(0, 180px));
   justify-content: center;
   gap: 14px;
   padding: 12px 20px 20px;
@@ -901,6 +901,10 @@ svg    { display: block; }
   }
   #symbol-wrap { width: 60px; height: 60px; aspect-ratio: auto; flex-shrink: 0; }
   #speak-label { padding: 0; }
+}
+
+/* Phones: drop the home grid to 2 columns (iPads keep the 4x3 layout). */
+@media (max-width: 600px) {
   #activity-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
