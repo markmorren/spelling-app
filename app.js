@@ -82,15 +82,14 @@ let mixSetIds  = null;   // non-null = custom mix over these set ids (within one
 let mixLimit   = null;   // max words in a mix round (null = no cap)
 let globalMix  = null;   // non-null = home mix: { actIds: [...], limit }
 let mixMode    = 'activity'; // which builder the mix overlay is currently showing
-let teacherOpen = new Set(); // expanded teacher-settings accordion sections
 let pickTier   = 'all';      // selected tier on a tiered (CEC) picker
-let setFilterOpen = new Set(); // expanded per-activity cards in Word sets
 let wordIdx    = 0;
 let order      = [];
 let answer     = [];
 let checked    = false;
 let roundWords = [];   // words in the current round (full set, or just the missed ones)
 let missed     = [];   // words spelled incorrectly this round
+let trickyRound = false; // non-false = a round built from the learner's tricky words
 
 let selectedVoice   = null;
 let speechRate      = 0.75;
@@ -160,6 +159,23 @@ function renderHome() {
   const enabled = getEnabledIds();
   const grid = document.getElementById('activity-grid');
   grid.innerHTML = '';
+
+  // Tricky Words - a one-tap round of the learner's own past mistakes.
+  // Appears automatically once there are words worth re-practising.
+  const trickyN = trickyCount();
+  if (trickyN > 0) {
+    const t = document.createElement('div');
+    t.className = 'act-card tricky-card';
+    t.dataset.tricky = '1';
+    t.innerHTML = `
+      <div class="act-card-hero" style="background:#FF950020"><span>🎯</span></div>
+      <div class="act-card-body">
+        <h3>Tricky Words</h3>
+        <p>Practise the ${trickyN === 1 ? 'word' : trickyN + ' words'} you found tricky</p>
+      </div>`;
+    grid.appendChild(t);
+  }
+
   activities.filter(a => enabled.has(a.id)).forEach((act, i) => {
     const meta = ACT_META[act.id] || { icon: '📝', color: '#8E8E93', desc: '' };
     const card = document.createElement('div');
@@ -371,6 +387,7 @@ function startSpelling(aIdx, sId) {
   actIdx    = aIdx;
   mixSetIds = null;
   globalMix = null;
+  trickyRound = false;
   setId     = (sId === '__all__') ? null : sId;
   startRound(getWords());
   showScreen('spell');
@@ -383,6 +400,7 @@ function startMix(aIdx, setIds, limit) {
   actIdx    = aIdx;
   setId     = null;
   globalMix = null;
+  trickyRound = false;
   mixSetIds = setIds;
   mixLimit  = limit || null;
   startRound(getWords());
@@ -394,8 +412,20 @@ function startMix(aIdx, setIds, limit) {
 // Start a home mix that spans whole activities, capped at `limit` words (0 = all).
 function startGlobalMix(actIds, limit) {
   mixSetIds = null;
+  trickyRound = false;
   globalMix = { actIds, limit: limit || null };
   startRound(getWords());
+  showScreen('spell');
+  renderBank();
+  renderWord();
+}
+
+// Start a round built from the learner's own tricky words (device-local history).
+function startTrickyRound() {
+  trickyRound = true;
+  mixSetIds = null;
+  globalMix = null;
+  startRound(getTrickyWords());
   showScreen('spell');
   renderBank();
   renderWord();
@@ -606,6 +636,7 @@ function checkAnswer() {
   const tiles = document.getElementById('answer-tiles');
 
   lastCheckResult = (typed === w.word);
+  recordAttempt(w, typed, lastCheckResult);
 
   if (lastCheckResult) {
     fb.className   = 'correct';
@@ -637,17 +668,20 @@ function nextWord() {
 // more than one enabled set) or home.
 function exitSpelling() {
   const act = activities[actIdx];
+  if (trickyRound) { trickyRound = false; renderHome(); showScreen('home'); return; }
   if (globalMix) { globalMix = null; renderHome(); showScreen('home'); return; }
   if (mixSetIds) { mixSetIds = null; renderPick(actIdx); showScreen('pick'); return; }
   if (act.sets) {
     const en = getEnabledSets(act.id);
     if (act.sets.filter(s => en.has(s.id)).length <= 1) {
+      renderHome();
       showScreen('home');
     } else {
       renderPick(actIdx);
       showScreen('pick');
     }
   } else {
+    renderHome();
     showScreen('home');
   }
 }
@@ -695,7 +729,7 @@ function practiceMissed() {
 
 function playAgain() {
   hideResults();
-  startRound(getWords());
+  startRound(trickyRound ? getTrickyWords() : getWords());
   renderWord();
 }
 
@@ -938,7 +972,6 @@ function verifyPin() {
   const stored = localStorage.getItem('teacher_pin') || DEFAULT_PIN;
   if (pin === stored) {
     document.getElementById('pin-overlay').hidden = true;
-    teacherOpen.clear(); // always start with all sections collapsed
     renderTeacher();
     showScreen('teacher');
   } else {
@@ -979,66 +1012,79 @@ function bindToggle(id, key, after) {
   });
 }
 
-// Accordion sections: id, icon, name, body-builder, body-binder.
-const TEACHER_SECTIONS = [
-  ['activities', '📚', 'Activities',     () => teacherActivitiesHTML(), () => bindTeacherActivities()],
-  ['sets',       '🔤', 'Word sets',      () => teacherSetsHTML(),       () => bindTeacherSets()],
-  ['aids',       '🎯', 'Learning aids',  () => teacherAidsHTML(),       () => bindTeacherAids()],
-  ['sound',      '🔊', 'Sound & speech', () => teacherSoundHTML(),      () => bindTeacherSound()],
-  ['admin',      '🔒', 'Admin',          () => teacherAdminHTML(),      () => bindTeacherAdmin()],
-];
-
+// Teacher Settings: one flat scrollable screen (no accordions).
 function renderTeacher() {
   const c = document.getElementById('teacher-content');
-  c.innerHTML = TEACHER_SECTIONS.map(([id, icon, name, html]) => {
-    const open = teacherOpen.has(id);
-    return `
-      <div class="t-acc${open ? ' open' : ''}" data-acc="${id}">
-        <button class="t-acc-head" data-acc-toggle="${id}">
-          <span class="t-menu-icon">${icon}</span>
-          <span class="t-acc-name">${name}</span>
-          <span class="t-acc-chevron">⌄</span>
-        </button>
-        <div class="t-acc-body"${open ? '' : ' hidden'}>${html()}</div>
-      </div>`;
-  }).join('');
-
-  // Bind each section's controls (elements exist even while collapsed).
-  TEACHER_SECTIONS.forEach(([, , , , bind]) => bind());
-
-  // Accordion expand/collapse - only one section open at a time.
-  c.querySelectorAll('.t-acc-head').forEach(head => {
-    head.addEventListener('click', () => {
-      const willOpen = !teacherOpen.has(head.dataset.accToggle);
-      teacherOpen.clear();
-      if (willOpen) teacherOpen.add(head.dataset.accToggle);
-      c.querySelectorAll('.t-acc').forEach(acc => {
-        const open = teacherOpen.has(acc.dataset.acc);
-        acc.classList.toggle('open', open);
-        acc.querySelector('.t-acc-body').hidden = !open;
-      });
-    });
-  });
-}
-
-// ── Teacher: activities ───────────────────────────────────
-function teacherActivitiesHTML() {
-  return `
-    <div>
-      <div class="t-section-title">Activities shown to learners</div>
+  c.innerHTML = `
+    <div class="t-group">
+      <div class="t-section-title">Activities on the home screen</div>
       <div class="t-card" id="act-toggles"></div>
     </div>
-    <div>
+
+    <div class="t-group">
       <div class="t-section-title">Challenge</div>
       <div class="t-card">
         ${toggleRowHTML('toggle-homemix', 'feature_homemix', false,
-          'Mix on Home Screen', 'Unlock a cross-activity mix card for confident learners')}
+          'Mix on Home Screen', 'A cross-activity mix card for confident learners')}
+      </div>
+    </div>
+
+    <div class="t-group">
+      <div class="t-section-title">Word sets shown to learners</div>
+      <div class="t-card" id="set-curation"></div>
+    </div>
+
+    <div class="t-group">
+      <div class="t-section-title">Learning modes</div>
+      <div class="t-card">
+        ${toggleRowHTML('toggle-elkonin', 'feature_elkonin', false,
+          'Elkonin boxes', 'Phoneme boxes instead of a flat tile row')}
+        ${toggleRowHTML('toggle-write', 'feature_write', false,
+          'Write the word', 'A line to handwrite the word after it is checked')}
+        ${toggleRowHTML('toggle-qwerty', 'feature_qwerty', false,
+          'QWERTY keyboard', 'Tiles in keyboard order instead of A-Z')}
+        ${toggleRowHTML('toggle-saytwice', 'feature_saytwice', true,
+          'Say each word twice', 'Reads the word, pauses, then repeats it')}
+        ${toggleRowHTML('toggle-sound', 'feature_sound', true,
+          'Celebration sound', 'A chime when a round is all correct')}
+      </div>
+    </div>
+
+    <div class="t-group">
+      <div class="t-section-title">Learner progress</div>
+      <div class="t-card" id="progress-panel"></div>
+    </div>
+
+    <div class="t-group">
+      <div class="t-section-title">Admin</div>
+      <div class="t-card">
+        <div class="t-btn-row" id="change-pin-row">
+          <span>Change PIN (current: ${localStorage.getItem('teacher_pin') || DEFAULT_PIN})</span>
+          <span class="t-arrow">›</span>
+        </div>
+        <div class="t-btn-row" id="reset-row">
+          <span class="t-danger">Reset all settings to defaults</span>
+        </div>
       </div>
     </div>`;
+
+  buildActivityToggles();
+  buildSetCuration();
+  buildProgressPanel();
+  bindToggle('toggle-homemix',  'feature_homemix', () => { renderHome(); });
+  bindToggle('toggle-elkonin',  'feature_elkonin');
+  bindToggle('toggle-write',    'feature_write');
+  bindToggle('toggle-qwerty',   'feature_qwerty');
+  bindToggle('toggle-saytwice', 'feature_saytwice');
+  bindToggle('toggle-sound',    'feature_sound');
+  bindTeacherAdmin();
 }
-function bindTeacherActivities() {
+
+// ── Teacher: which activities appear on the home screen ────
+function buildActivityToggles() {
   const enabled = getEnabledIds();
   const wrap = document.getElementById('act-toggles');
+  wrap.innerHTML = '';
   activities.forEach(act => {
     const meta = ACT_META[act.id] || {};
     const row  = document.createElement('div');
@@ -1057,266 +1103,144 @@ function bindTeacherActivities() {
       const ids = [...wrap.querySelectorAll('input:checked')].map(i => i.dataset.actId);
       localStorage.setItem('enabled_activities', JSON.stringify(ids));
       renderHome();
+      buildSetCuration();   // enabling/disabling activities changes this list
     });
   });
-  bindToggle('toggle-homemix', 'feature_homemix', renderHome);
+}
+
+// ── Teacher: word-set curation (one row per level -> chooser) ──
+function buildSetCuration() {
+  const wrap = document.getElementById('set-curation');
+  const enabled = getEnabledIds();
+  const acts = activities.filter(a => a.sets && a.sets.length && enabled.has(a.id));
+  wrap.innerHTML = '';
+  if (!acts.length) {
+    wrap.innerHTML = `<div class="t-empty">No multi-set activities are switched on.</div>`;
+    return;
+  }
+  acts.forEach(act => {
+    const meta = ACT_META[act.id] || {};
+    const on   = getEnabledSets(act.id).size;
+    const row  = document.createElement('div');
+    row.className = 't-btn-row';
+    row.innerHTML = `
+      <span>${meta.icon || ''} ${act.name}</span>
+      <span class="t-row-value">${on} of ${act.sets.length}</span>
+      <span class="t-arrow">›</span>`;
+    row.addEventListener('click', () => openSetChooser(act.id));
+    wrap.appendChild(row);
+  });
+}
+
+// ── Teacher: set chooser overlay (simple checklist + quick picks) ──
+function openSetChooser(actId) {
+  const act = activities.find(a => a.id === actId);
+  if (!act) return;
+  const overlay = document.getElementById('setpick-overlay');
+  const listEl  = document.getElementById('setpick-list');
+  const quickEl = document.getElementById('setpick-quick');
+  document.getElementById('setpick-title').textContent = act.name;
+
+  const tiered = isTieredActivity(act);
+  quickEl.innerHTML =
+    `<button data-q="all">All</button><button data-q="none">None</button>` +
+    (tiered ? `<button data-q="core">Core</button><button data-q="ext">Extension</button><button data-q="chal">Challenge</button>` : '');
+
+  const render = () => {
+    const cur = getEnabledSets(actId);
+    listEl.innerHTML = act.sets.map(s =>
+      `<button class="setpick-item${cur.has(s.id) ? ' on' : ''}" data-set-id="${s.id}">
+        <span class="setpick-check"></span>
+        <span class="setpick-name">${s.id.length <= 3 ? `"${s.id}" words` : s.name}</span>
+        <span class="setpick-count">${s.words.length}</span>
+      </button>`).join('');
+  };
+  render();
+
+  // Tap a set: toggle it (never let the last one switch off, so a level is never empty).
+  listEl.onclick = e => {
+    const item = e.target.closest('.setpick-item');
+    if (!item) return;
+    const cur = getEnabledSets(actId);
+    const id  = item.dataset.setId;
+    if (cur.has(id)) { if (cur.size > 1) cur.delete(id); }
+    else cur.add(id);
+    setEnabledSets(actId, cur);
+    render();
+  };
+
+  // Quick picks.
+  quickEl.onclick = e => {
+    const q = e.target.dataset.q;
+    if (!q) return;
+    if (q === 'all')  setEnabledSets(actId, act.sets.map(s => s.id));
+    else if (q === 'none') setEnabledSets(actId, [act.sets[0].id]); // keep at least one
+    else {
+      const ids = act.sets.filter(s => tierKeyOf(s.name) === q).map(s => s.id);
+      if (ids.length) setEnabledSets(actId, ids);
+    }
+    render();
+  };
+
+  overlay.hidden = false;
 }
 
 // ── Teacher: word sets ────────────────────────────────────
-function teacherSetsHTML() {
-  return `<div>
-      <div class="t-section-title">Filter word sets</div>
-      <div id="set-filters"></div>
-    </div>`;
-}
-// Each activity becomes its own collapsible sub-section (lazy-built on first
-// open) so the page stays short however many levels are added.
-function bindTeacherSets() {
-  const enabled = getEnabledIds();
-  const sfWrap = document.getElementById('set-filters');
-  const acts = activities.filter(a => a.sets && enabled.has(a.id));
-
-  acts.forEach(act => {
-    const open = setFilterOpen.has(act.id);
-    const meta = ACT_META[act.id] || {};
-    const wrap = document.createElement('div');
-    wrap.className = 't-subacc' + (open ? ' open' : '');
-    wrap.innerHTML = `
-      <button class="t-subacc-head">
-        <span class="t-subacc-name">${meta.icon || ''} ${act.name}</span>
-        <span class="t-subacc-count">${act.sets.length}</span>
-        <span class="t-subacc-chevron">⌄</span>
-      </button>
-      <div class="t-subacc-body"${open ? '' : ' hidden'}></div>`;
-    const body = wrap.querySelector('.t-subacc-body');
-
-    const build = () => {
-      if (body.dataset.built) return;
-      body.dataset.built = '1';
-      if (isTieredActivity(act)) buildTieredMatrix(act, body);
-      else buildPlainChips(act, body);
-    };
-    if (open) build();
-
-    wrap.querySelector('.t-subacc-head').addEventListener('click', () => {
-      const willOpen = !setFilterOpen.has(act.id);
-      if (willOpen) { setFilterOpen.add(act.id); build(); }
-      else setFilterOpen.delete(act.id);
-      wrap.classList.toggle('open', willOpen);
-      body.hidden = !willOpen;
-    });
-    sfWrap.appendChild(wrap);
-  });
-
-  if (!acts.length) {
-    sfWrap.innerHTML = `<div class="t-card"><div class="t-empty">No multi-set activities are enabled.</div></div>`;
-  }
-}
-
 function setEnabledSets(actId, ids) {
   localStorage.setItem(`enabled_sets_${actId}`, JSON.stringify([...ids]));
 }
 
-// Categorise a CEC pattern label so the matrix can group rows.
-function patternCategory(label) {
-  const l = label.toLowerCase().trim();
-  if (/plural/.test(l)) return 'Inflections';
-  if (['-ing', '-ed', '-d', '-s', '-es', '-ies', '-lling/ -lled'].includes(l)) return 'Inflections';
-  if (l.endsWith('-') || ['un', 'a-', 'al-'].includes(l)) return 'Prefixes';
-  if (l.startsWith('-')) return 'Suffixes & endings';
-  return 'Spelling patterns';
-}
-const CATEGORY_ORDER = ['Spelling patterns', 'Prefixes', 'Suffixes & endings', 'Inflections'];
+// ── Teacher: learner progress ─────────────────────────────
+// Rule-based diagnosis of where the learner is going right and wrong,
+// built entirely from the device-local attempt history in progress.js.
+function buildProgressPanel() {
+  const panel = document.getElementById('progress-panel');
+  if (!panel) return;
+  const s = getProgressSummary();
 
-// Flat chip grid for ordinary multi-set activities.
-function buildPlainChips(act, body) {
-  const enabledSets = getEnabledSets(act.id);
-  const chipGrid = document.createElement('div');
-  chipGrid.className = 'set-chip-grid';
-  act.sets.forEach(s => {
-    const sMeta = SET_META[s.id] || {};
-    const btn = document.createElement('button');
-    btn.className = 'set-chip' + (enabledSets.has(s.id) ? ' on' : '');
-    btn.style.setProperty('--chip-color', sMeta.color || '#8E8E93');
-    btn.innerHTML = `${sMeta.icon || ''} <strong>${s.id}</strong>`;
-    btn.addEventListener('click', () => {
-      const cur = getEnabledSets(act.id);
-      if (cur.has(s.id)) { if (cur.size > 1) cur.delete(s.id); }
-      else cur.add(s.id);
-      setEnabledSets(act.id, cur);
-      btn.className = 'set-chip' + (cur.has(s.id) ? ' on' : '');
-    });
-    chipGrid.appendChild(btn);
-  });
-  body.appendChild(chipGrid);
-}
+  if (s.attempts === 0) {
+    panel.innerHTML =
+      `<div class="t-empty">No practice yet. Once a learner has spelled some words, their accuracy and tricky sounds show here.</div>`;
+    return;
+  }
 
-// Pattern × tier matrix (grouped by category) for tiered CEC activities.
-function buildTieredMatrix(act, body) {
-  const order = [];
-  const byPattern = {};
-  act.sets.forEach(s => {
-    const p = s.name.split(': ')[0];
-    if (!byPattern[p]) { byPattern[p] = {}; order.push(p); }
-    byPattern[p][tierKeyOf(s.name)] = s.id;
-  });
+  const sounds = getSoundStats().slice(0, 6);
+  const soundRows = sounds.map(x => `
+    <div class="prog-sound">
+      <span class="prog-sound-name">${x.sound}</span>
+      <span class="prog-meter"><span class="prog-meter-fill" style="width:${x.pct}%"></span></span>
+      <span class="prog-sound-pct">${x.pct}%</span>
+    </div>`).join('');
 
-  // Group patterns by category, preserving original order within each.
-  const groups = CATEGORY_ORDER
-    .map(cat => [cat, order.filter(p => patternCategory(p) === cat)])
-    .filter(([, ps]) => ps.length);
-  const showCats = groups.length > 1;
+  const tricky = getTrickyWords(20);
+  const trickyChips = tricky.length
+    ? tricky.map(w => `<span class="missed-chip">${w.word}</span>`).join('')
+    : `<span class="t-empty">None right now - nothing outstanding to re-practise.</span>`;
 
-  const rowHTML = p => `
-    <div class="tm-row">
-      <span class="tm-pattern">${p}</span>
-      ${['core', 'ext', 'chal'].map(t => byPattern[p][t]
-        ? `<button class="tm-cell" data-set-id="${byPattern[p][t]}"></button>`
-        : `<span class="tm-cell tm-empty"></span>`).join('')}
-    </div>`;
-
-  body.innerHTML = `
-    <div class="tm-bulk"><button data-bulk="all">All</button><button data-bulk="none">None</button></div>
-    <div class="tier-matrix">
-      <div class="tm-row tm-head">
-        <span class="tm-pattern"></span>
-        <button class="tm-col" data-col="core">Core</button>
-        <button class="tm-col" data-col="ext">Ext</button>
-        <button class="tm-col" data-col="chal">Chal</button>
-      </div>
-      ${groups.map(([cat, ps]) =>
-        (showCats ? `<div class="tm-cat">${cat}</div>` : '') + ps.map(rowHTML).join('')
-      ).join('')}
-    </div>`;
-
-  const matrix = body.querySelector('.tier-matrix');
-  const refresh = () => {
-    const cur = getEnabledSets(act.id);
-    matrix.querySelectorAll('.tm-cell[data-set-id]').forEach(c =>
-      c.classList.toggle('on', cur.has(c.dataset.setId)));
-  };
-  refresh();
-
-  matrix.addEventListener('click', e => {
-    const cur = getEnabledSets(act.id);
-    const cell = e.target.closest('.tm-cell[data-set-id]');
-    if (cell) {
-      const id = cell.dataset.setId;
-      if (cur.has(id)) cur.delete(id); else cur.add(id);
-      setEnabledSets(act.id, cur); refresh(); return;
-    }
-    const col = e.target.closest('.tm-col');
-    if (col) {
-      const ids = order.map(p => byPattern[p][col.dataset.col]).filter(Boolean);
-      const allOn = ids.every(id => cur.has(id));
-      ids.forEach(id => allOn ? cur.delete(id) : cur.add(id));
-      setEnabledSets(act.id, cur); refresh();
-    }
-  });
-
-  body.querySelector('[data-bulk="all"]').addEventListener('click', () => {
-    setEnabledSets(act.id, act.sets.map(s => s.id)); refresh();
-  });
-  body.querySelector('[data-bulk="none"]').addEventListener('click', () => {
-    setEnabledSets(act.id, []); refresh();
-  });
-}
-
-// ── Teacher: learning aids (display & input) ──────────────
-function teacherAidsHTML() {
-  return `
-    <div>
-      <div class="t-section-title">Display &amp; input</div>
-      <div class="t-card">
-        ${toggleRowHTML('toggle-elkonin', 'feature_elkonin', false,
-          'Elkonin Boxes', 'Phoneme boxes instead of a flat tile row')}
-        ${toggleRowHTML('toggle-write', 'feature_write', false,
-          'Write the Word', 'Drawing canvas after each word is checked')}
-        ${toggleRowHTML('toggle-qwerty', 'feature_qwerty', false,
-          'QWERTY Keyboard', 'Tiles in keyboard order instead of A-Z')}
-      </div>
-    </div>`;
-}
-function bindTeacherAids() {
-  bindToggle('toggle-elkonin', 'feature_elkonin');
-  bindToggle('toggle-write', 'feature_write');
-  bindToggle('toggle-qwerty', 'feature_qwerty');
-}
-
-// ── Teacher: sound & speech ───────────────────────────────
-function teacherSoundHTML() {
-  return `
-    <div>
-      <div class="t-section-title">Sound</div>
-      <div class="t-card">
-        ${toggleRowHTML('toggle-sound', 'feature_sound', true,
-          'Celebration Sound', 'Play a chime when a round is all correct')}
-        ${toggleRowHTML('toggle-saytwice', 'feature_saytwice', true,
-          'Say Each Word Twice', 'Reads the word, pauses, then repeats it')}
-      </div>
+  panel.innerHTML = `
+    <div class="prog-summary">
+      <div class="prog-stat"><strong>${s.pct}%</strong><span>accuracy</span></div>
+      <div class="prog-stat"><strong>${s.wordsPractised}</strong><span>words tried</span></div>
+      <div class="prog-stat"><strong>${s.tricky}</strong><span>still tricky</span></div>
     </div>
-    <div>
-      <div class="t-section-title">Voice</div>
-      <div class="t-card">
-        <div class="t-row">
-          <span class="t-row-label">Voice</span>
-          <select class="t-voice-select" id="t-voice-select"></select>
-        </div>
-        <div class="t-rate-wrap">
-          <label class="t-row-label">Speed</label>
-          <input type="range" id="t-rate" min="0.5" max="1.1" step="0.05" value="${speechRate}">
-          <span class="t-rate-value" id="t-rate-val">${speechRate.toFixed(2)}×</span>
-        </div>
-        <div class="t-row">
-          <span class="t-row-label">Test voice</span>
-          <button class="t-btn-row" id="t-test-btn" style="background:var(--blue);color:#fff;border-radius:8px;padding:7px 14px;font-weight:700;font-size:14px;border:none;">▶ Play</button>
-        </div>
-      </div>
+    <div class="prog-label">Weakest sounds</div>
+    <div class="prog-sounds">${soundRows}</div>
+    <div class="prog-label">Tricky words</div>
+    <div class="prog-chips">${trickyChips}</div>
+    <div class="t-btn-row" id="clear-progress-row">
+      <span class="t-danger">Clear learner progress</span>
     </div>`;
-}
-function bindTeacherSound() {
-  bindToggle('toggle-sound', 'feature_sound');
-  bindToggle('toggle-saytwice', 'feature_saytwice');
 
-  const vsel = document.getElementById('t-voice-select');
-  populateVoiceSelect(vsel);
-  vsel.addEventListener('change', e => {
-    const v = window.speechSynthesis.getVoices().find(v => v.name === e.target.value);
-    if (v) { selectedVoice = v; localStorage.setItem('spelling_voice', v.name); }
-  });
-
-  document.getElementById('t-rate').addEventListener('input', e => {
-    speechRate = parseFloat(e.target.value);
-    document.getElementById('t-rate-val').textContent = `${speechRate.toFixed(2)}×`;
-    localStorage.setItem('spelling_rate', speechRate);
-    syncRateUI();
-  });
-  document.getElementById('t-test-btn').addEventListener('click', () => {
-    speak('Can you spell the word?');
+  document.getElementById('clear-progress-row').addEventListener('click', () => {
+    if (confirm('Clear this learner’s progress history? This cannot be undone.')) {
+      clearProgress();
+      buildProgressPanel();
+      renderHome();
+    }
   });
 }
 
 // ── Teacher: admin ────────────────────────────────────────
-function teacherAdminHTML() {
-  return `
-    <div>
-      <div class="t-section-title">Security</div>
-      <div class="t-card">
-        <div class="t-btn-row" id="change-pin-row">
-          <span>Change PIN (current: ${localStorage.getItem('teacher_pin') || DEFAULT_PIN})</span>
-          <span class="t-arrow">›</span>
-        </div>
-      </div>
-    </div>
-    <div>
-      <div class="t-section-title">Data</div>
-      <div class="t-card">
-        <div class="t-btn-row" id="reset-row">
-          <span class="t-danger">Reset all settings to defaults</span>
-        </div>
-      </div>
-    </div>`;
-}
 function bindTeacherAdmin() {
   document.getElementById('change-pin-row').addEventListener('click', () => {
     const np = prompt('Enter new 4-digit PIN (numbers only):');
@@ -1351,41 +1275,6 @@ function bindTeacherAdmin() {
       renderHome();
     }
   });
-}
-
-// ── Voice settings (spell screen overlay) ─────────────────
-function openVoiceSettings() {
-  populateVoiceSelect(document.getElementById('voice-select'));
-  syncRateUI();
-  document.getElementById('settings-overlay').hidden = false;
-}
-
-function populateVoiceSelect(sel) {
-  const voices  = window.speechSynthesis.getVoices();
-  const gb      = voices.filter(v => v.lang === 'en-GB');
-  const enOther = voices.filter(v => v.lang.startsWith('en') && v.lang !== 'en-GB');
-  const makeOpt = v => {
-    const o = document.createElement('option');
-    o.value = v.name;
-    o.textContent = v.name.replace(' (Enhanced)', ' ✦');
-    if (selectedVoice && v.name === selectedVoice.name) o.selected = true;
-    return o;
-  };
-  sel.innerHTML = '';
-  if (gb.length) {
-    const g = document.createElement('optgroup'); g.label = 'English (UK)';
-    gb.forEach(v => g.appendChild(makeOpt(v))); sel.appendChild(g);
-  }
-  if (enOther.length) {
-    const g = document.createElement('optgroup'); g.label = 'English (other)';
-    enOther.forEach(v => g.appendChild(makeOpt(v))); sel.appendChild(g);
-  }
-}
-
-function syncRateUI() {
-  const ri = document.getElementById('rate-range');
-  const rl = document.getElementById('rate-label');
-  if (ri) { ri.value = speechRate; rl.textContent = `${speechRate.toFixed(2)}×`; }
 }
 
 // ── Enabled activities ────────────────────────────────────
@@ -1434,6 +1323,7 @@ function bindEvents() {
   document.getElementById('activity-grid').addEventListener('click', e => {
     const card = e.target.closest('.act-card');
     if (!card) return;
+    if (card.dataset.tricky) { startTrickyRound(); return; }
     if (card.dataset.homeMix) { openGlobalMix(); return; }
     const idx = +card.dataset.actIdx;
     const act = activities[idx];
@@ -1526,29 +1416,14 @@ function bindEvents() {
   document.getElementById('check-btn').addEventListener('click', checkAnswer);
   document.getElementById('next-btn').addEventListener('click',  nextWord);
 
-  // Settings (spell screen)
-  document.getElementById('settings-btn').addEventListener('click', openVoiceSettings);
-  document.getElementById('settings-close-btn').addEventListener('click', () => {
-    document.getElementById('settings-overlay').hidden = true;
-  });
-  document.getElementById('settings-overlay').addEventListener('click', e => {
-    if (e.target === e.currentTarget)
-      document.getElementById('settings-overlay').hidden = true;
-  });
-  document.getElementById('test-voice-btn').addEventListener('click', () => {
-    speak('Can you spell the word?');
-  });
-  document.getElementById('voice-select').addEventListener('change', e => {
-    const v = window.speechSynthesis.getVoices().find(v => v.name === e.target.value);
-    if (v) {
-      selectedVoice = v;
-      localStorage.setItem('spelling_voice', v.name);
-    }
-  });
-  document.getElementById('rate-range').addEventListener('input', e => {
-    speechRate = parseFloat(e.target.value);
-    document.getElementById('rate-label').textContent = `${speechRate.toFixed(2)}×`;
-    localStorage.setItem('spelling_rate', speechRate);
+  // Teacher: set chooser overlay
+  const closeSetpick = () => {
+    document.getElementById('setpick-overlay').hidden = true;
+    buildSetCuration(); // refresh the "X of Y" counts on the teacher screen
+  };
+  document.getElementById('setpick-done').addEventListener('click', closeSetpick);
+  document.getElementById('setpick-overlay').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeSetpick();
   });
 
   // Teacher: back
@@ -1566,7 +1441,7 @@ function bindEvents() {
   // Escape closes overlays
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    document.getElementById('settings-overlay').hidden = true;
+    document.getElementById('setpick-overlay').hidden = true;
     document.getElementById('pin-overlay').hidden = true;
   });
 }

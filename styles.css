@@ -521,6 +521,9 @@ svg    { display: block; }
 .t-btn-row .t-arrow { color: var(--label3); font-size: 18px; }
 
 .t-danger { color: var(--red) !important; }
+/* curation rows: label fills, count + chevron hug right */
+.t-btn-row .t-row-value { flex: 0 0 auto; color: var(--label3); font-variant-numeric: tabular-nums; }
+.t-btn-row .t-arrow { flex: 0 0 auto; }
 
 /* Teacher accordion */
 .t-acc {
@@ -891,6 +894,75 @@ svg    { display: block; }
 #mix-cancel { background: #e5e5ea; color: var(--label2); }
 #mix-start  { background: var(--blue); color: #fff; }
 
+/* ── Set chooser (teacher curation) ── */
+#setpick-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 350;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+#setpick-overlay[hidden] { display: none; }
+#setpick-panel {
+  background: var(--card);
+  border-radius: 22px;
+  padding: 18px 20px;
+  width: min(460px, 94vw);
+  max-height: 88vh;
+  display: flex; flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.22);
+  animation: panel-in .2s ease-out;
+}
+#setpick-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#setpick-title { font-size: 19px; font-weight: 800; color: var(--label); }
+#setpick-done {
+  flex-shrink: 0;
+  background: var(--blue); color: #fff;
+  font-size: 15px; font-weight: 700;
+  padding: 8px 18px; border-radius: 999px;
+}
+#setpick-quick { display: flex; flex-wrap: wrap; gap: 6px; }
+#setpick-quick button {
+  font-size: 13px; font-weight: 700;
+  padding: 6px 13px; border-radius: 999px;
+  background: #e5e5ea; color: var(--label2);
+}
+#setpick-quick button:active { filter: brightness(.9); }
+#setpick-list {
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--separator);
+  border-radius: var(--r-md);
+  padding: 4px;
+}
+.setpick-item {
+  display: flex; align-items: center; gap: 11px;
+  width: 100%;
+  padding: 10px 10px;
+  border-radius: var(--r-sm);
+  text-align: left;
+  background: none;
+}
+.setpick-item:active { background: var(--bg); }
+.setpick-check {
+  flex-shrink: 0;
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  border: 2px solid #c7c7cc;
+  position: relative;
+}
+.setpick-item.on .setpick-check { background: var(--green); border-color: var(--green); }
+.setpick-item.on .setpick-check::after {
+  content: ''; position: absolute;
+  left: 6px; top: 2px;
+  width: 5px; height: 10px;
+  border: solid #fff; border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+}
+.setpick-name { flex: 1; font-size: 15px; color: var(--label); }
+.setpick-count { font-size: 13px; color: var(--label3); font-variant-numeric: tabular-nums; }
+
 /* ── Portrait / small screens ── */
 @media (max-width: 600px), (orientation: portrait) and (max-width: 820px) {
   #work-area { flex-direction: column; }
@@ -974,3 +1046,60 @@ svg    { display: block; }
 /* ════════════════════════════════════════════════════════
    WRITE THE WORD (inline section)
    ════════════════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════════════════
+   TRICKY WORDS CARD + LEARNER PROGRESS PANEL
+   ════════════════════════════════════════════════════════ */
+.tricky-card {
+  outline: 2px solid var(--orange);
+  outline-offset: -2px;
+}
+
+.prog-summary {
+  display: flex;
+  padding: 16px;
+  gap: 12px;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.prog-stat {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 2px;
+}
+.prog-stat strong {
+  font-size: 24px; font-weight: 800; color: var(--label);
+  font-variant-numeric: tabular-nums;
+}
+.prog-stat span { font-size: 12px; color: var(--label3); }
+
+.prog-label {
+  padding: 14px 16px 6px;
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .4px; color: var(--label3);
+}
+.prog-sounds { padding: 0 16px 8px; }
+.prog-sound {
+  display: flex; align-items: center; gap: 10px;
+  padding: 5px 0;
+}
+.prog-sound-name {
+  flex: 0 0 56px; font-weight: 700; font-size: 15px; color: var(--label);
+}
+.prog-meter {
+  flex: 1; height: 8px; border-radius: 999px;
+  background: rgba(0,0,0,.08); overflow: hidden;
+}
+.prog-meter-fill {
+  display: block; height: 100%; border-radius: 999px;
+  background: var(--orange);
+}
+.prog-sound-pct {
+  flex: 0 0 40px; text-align: right;
+  font-size: 14px; color: var(--label3);
+  font-variant-numeric: tabular-nums;
+}
+.prog-chips {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 0 16px 14px;
+}
+.prog-chips .missed-chip { font-size: 14px; padding: 4px 11px; }

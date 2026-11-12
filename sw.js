@@ -1,8 +1,9 @@
-const CACHE = 'spelling-v30';
+const CACHE = 'spelling-v32';
 const ASSETS = [
   '/',
   '/index.html',
   '/styles.css',
+  '/progress.js',
   '/app.js',
   '/words.json',
   '/manifest.json'

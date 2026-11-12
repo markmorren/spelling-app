@@ -46,9 +46,6 @@
       <div id="sound-badge"></div>
       <div class="spell-header-right">
         <span id="progress-text"></span>
-        <button id="settings-btn" aria-label="Settings">
-          <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96a7.1 7.1 0 0 0-1.62-.94l-.36-2.54A.484.484 0 0 0 14 2h-4c-.24 0-.44.17-.47.41l-.36 2.54a7.1 7.1 0 0 0-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.04.7 1.62.94l.36 2.54c.05.24.27.41.48.41h4c.24 0 .44-.17.47-.41l.36-2.54a7.1 7.1 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.03-1.58zm-7.14 2.56a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>
-        </button>
       </div>
     </div>
 
@@ -154,25 +151,19 @@
     </div>
   </div>
 
-  <!-- ── Overlay: Voice settings ── -->
-  <div id="settings-overlay" hidden role="dialog" aria-modal="true" aria-label="Voice settings">
-    <div id="settings-panel">
-      <h2>Voice Settings</h2>
-      <div class="setting-row">
-        <label for="voice-select">Voice</label>
-        <select id="voice-select" aria-label="Choose voice"></select>
+  <!-- ── Overlay: Set chooser (teacher curation) ── -->
+  <div id="setpick-overlay" hidden role="dialog" aria-modal="true" aria-label="Choose word sets">
+    <div id="setpick-panel">
+      <div id="setpick-head">
+        <h2 id="setpick-title"></h2>
+        <button id="setpick-done">Done</button>
       </div>
-      <div class="setting-row">
-        <label for="rate-range">Speed &nbsp;<span id="rate-label"></span></label>
-        <input type="range" id="rate-range" min="0.5" max="1.1" step="0.05" value="0.75">
-      </div>
-      <div class="setting-actions">
-        <button id="test-voice-btn">▶ Test voice</button>
-        <button id="settings-close-btn">Done</button>
-      </div>
+      <div id="setpick-quick"></div>
+      <div id="setpick-list"></div>
     </div>
   </div>
 
+  <script src="progress.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
